@@ -41,9 +41,12 @@ const SETTINGS = [
   // application code still fails the requirement.
   { key: 'security.session_timeout_minutes', value: '10', type: 'int', group: 'security', labelMs: 'Tamat Sesi (minit)', labelEn: 'Session Timeout (minutes)' },
   { key: 'security.lockout_threshold', value: '3', type: 'int', group: 'security', labelMs: 'Had Cubaan Log Masuk', labelEn: 'Login Attempt Limit' },
+  { key: 'security.lockout_duration_minutes', value: '15', type: 'int', group: 'security', labelMs: 'Tempoh Kunci Akaun (minit)', labelEn: 'Account Lock Duration (minutes)' },
   { key: 'security.password_min_length', value: '12', type: 'int', group: 'security', labelMs: 'Panjang Minimum Kata Laluan', labelEn: 'Minimum Password Length' },
+  { key: 'security.password_max_length', value: '128', type: 'int', group: 'security', labelMs: 'Panjang Maksimum Kata Laluan', labelEn: 'Maximum Password Length' },
   { key: 'security.password_require_mixed_case', value: 'true', type: 'bool', group: 'security', labelMs: 'Wajib Huruf Besar & Kecil', labelEn: 'Require Mixed Case' },
   { key: 'security.password_require_symbol', value: 'true', type: 'bool', group: 'security', labelMs: 'Wajib Simbol', labelEn: 'Require Symbol' },
+  { key: 'security.password_require_digit', value: 'true', type: 'bool', group: 'security', labelMs: 'Wajib Nombor', labelEn: 'Require Digit' },
   { key: 'security.mfa_required', value: 'true', type: 'bool', group: 'security', labelMs: 'MFA Diwajibkan', labelEn: 'MFA Required' },
 
   // GP-18 retention. The flush button writes an audit_purge_runs row.
