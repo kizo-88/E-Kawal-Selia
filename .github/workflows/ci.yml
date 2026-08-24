@@ -1,0 +1,39 @@
+name: CI
+
+# The rules in RULES.md are only real because this runs on every push.
+# Do not add `continue-on-error` to any step here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prisma schema is valid
+        run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+
+      - name: RULES.md is enforced
+        run: npm run lint
+
+      - name: Tests, including the tests that guard the rules
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          SKIP_ENV_VALIDATION: '1'

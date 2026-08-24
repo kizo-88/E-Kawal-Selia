@@ -1,161 +1,161 @@
 # 09 — Local Setup
 
-Follow this exactly. If a step fails, fix it before continuing — a half-configured environment
-produces bugs that look like code bugs and burn a day of the lead's time.
+Follow this exactly. A half-configured environment produces bugs that look like code bugs and burn a
+day of the lead's time.
 
 ---
 
 ## 1. Prerequisites
 
-**Windows** (what the team runs). Install [Scoop](https://scoop.sh) first, then:
-
 ```bash
-scoop install php composer nodejs git
+scoop install nodejs git
 ```
 
-You also need **Docker Desktop** running, for PostgreSQL and Redis.
-
-Verify:
+Node 22+, plus **Docker Desktop running** (Supabase's local stack runs in it).
 
 ```bash
-php -v && composer --version && node -v && docker info --format "{{.ServerVersion}}"
-```
-
-Expect PHP 8.5+, Composer 2.10+, Node 22+.
-
----
-
-## 2. PHP extensions
-
-The Windows PHP build ships with no `php.ini`, so none of the extensions Laravel needs are on.
-Create `~/scoop/apps/php/current/php.ini` containing:
-
-```ini
-extension_dir = "ext"
-
-extension=mbstring
-extension=openssl
-extension=curl
-extension=fileinfo
-extension=zip
-extension=intl
-extension=exif
-extension=sodium
-extension=gd
-extension=pdo_pgsql
-extension=pgsql
-extension=pdo_sqlite
-extension=sqlite3
-
-memory_limit = 512M
-upload_max_filesize = 32M
-post_max_size = 40M
-date.timezone = Asia/Kuala_Lumpur
-
-[opcache]
-opcache.enable_cli = 0
-```
-
-Check `pdo_pgsql` is present — without it nothing connects to the database:
-
-```bash
-php -m | grep pdo_pgsql
+node -v && npm -v && docker info --format "{{.ServerVersion}}"
 ```
 
 ---
 
-## 3. Project
+## 2. Project
 
 ```bash
 git clone https://github.com/kizo-88/E-Kawal-Selia.git
 ```
 
 ```bash
-cd E-Kawal-Selia && composer install && npm install
+cd E-Kawal-Selia && npm install
 ```
 
 ```bash
-cp .env.example .env && php artisan key:generate
+cp .env.example .env
 ```
+
+Generate the two secrets and paste them into `.env`:
+
+```bash
+node -e "console.log('AUTH_SECRET=' + require('crypto').randomBytes(32).toString('base64'))"
+```
+
+```bash
+node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"
+```
+
+`ENCRYPTION_KEY` encrypts `ic_no` and `mfa_secret` at rest. **Lose it and those columns become
+unreadable.** Back it up somewhere that is not this repository.
 
 ---
 
-## 4. Services
+## 3. Supabase
 
 ```bash
-docker compose up -d
+npx supabase start
 ```
 
-That gives you three things:
+First run pulls several GB of images — leave it. When it finishes it prints the local URLs and keys.
+Copy the `anon key` and `service_role key` into `.env`.
 
-| Service | Where | What for |
-|---|---|---|
-| PostgreSQL 16 + PostGIS | `localhost:5432` | The database. PostGIS is there for Phase 2 geofencing. |
-| Redis 7 | `localhost:6379` | Queue and cache |
-| Mailpit | http://localhost:8025 | **Catches every outgoing email.** Nothing can reach a real applicant from your machine. |
+| Service | Where |
+|---|---|
+| API | http://127.0.0.1:54321 |
+| Postgres | `127.0.0.1:54322` |
+| Studio | http://127.0.0.1:54323 |
+| Inbucket (catches all mail) | http://127.0.0.1:54324 |
+
+**Every outgoing email is captured by Inbucket.** Nothing can reach a real applicant from a dev
+machine. Do not reconfigure SMTP to a real server locally.
 
 ---
 
-## 5. Database
+## 4. Database
 
 ```bash
-php artisan migrate --seed
+npm run db:migrate
 ```
+
+```bash
+npm run db:seed
+```
+
+The seed loads settings, lookups, internal units, the five baseline roles and the permission
+catalogue — everything G1 says must be data rather than code.
 
 ---
 
-## 6. Run it
-
-Two terminals:
-
-```bash
-php artisan serve
-```
+## 5. Run
 
 ```bash
 npm run dev
 ```
 
-App at http://localhost:8000.
+http://localhost:3000
 
 ---
 
-## 7. Before every commit
+## 6. Before every commit
 
 ```bash
-./vendor/bin/pint
+npm run lint && npm run test
 ```
 
-```bash
-php artisan test
-```
+Both must be clean. CI runs the same commands plus `prisma validate` and `next build`, and blocks
+the PR otherwise.
 
-Both must be clean. CI runs the same two commands and will reject the PR otherwise.
+---
+
+## ⚠️ Row Level Security — the one thing that silently breaks
+
+**Postgres exempts table owners from RLS.** If the application connects as `postgres`, every policy
+in `prisma/migrations/*_rls_policies` is skipped, every query returns everything, and **nothing
+fails**. G5 evaporates and the test suite still passes.
+
+So, before staging or production:
+
+1. Create a dedicated application role that does **not** own the tables and does **not** have
+   `BYPASSRLS`
+2. Point `DATABASE_URL` at that role
+3. Keep `DIRECT_URL` on the owner — migrations need DDL rights
+4. Verify with two accounts in different units that each sees only their own records
+
+Locally the default `postgres` user is convenient and fine, **as long as you know RLS is not
+actually being exercised on your machine.** Treat "it worked locally" as no evidence at all for
+anything permission-related.
 
 ---
 
 ## Troubleshooting
 
-**`could not find driver`** — `pdo_pgsql` is not enabled. Go back to step 2 and confirm
-`php --ini` reports a loaded configuration file. If it says `(none)`, your `php.ini` is in the wrong
-directory.
+**Queries return nothing for a signed-in user** — you called `prisma` directly instead of
+`withUser()` from `src/lib/db/scoped.ts`. Without the user stamped on the connection, RLS evaluates
+against NULL and correctly shows you nothing.
 
-**`SQLSTATE[08006] connection refused`** — Docker is not running, or `docker compose up -d` was never
-run. Check with `docker ps`.
+**`prisma migrate` fails with a connection or DDL error** — `DIRECT_URL` is pointing at the pooled
+endpoint. pgBouncer cannot run DDL. Use port 54322 locally, 5432 on Supabase Cloud.
 
-**Architecture tests fail on a new file** — every PHP file under `app/` needs
-`declare(strict_types=1);` on the second line. See `tests/Architecture/LayeringTest.php`.
+**`Hard-coded list of N strings`** — that is the G1 lint rule doing its job. Add a `lookup_type` and
+seed it. If it genuinely is not a business list, disable the rule *with a written reason* — an
+undocumented disable is a rejected PR.
 
-**`App\Domain` must not use `App\Filament`** — you put business logic in the wrong layer.
-Read `docs/03-architecture.md` §3. Move the logic into an Action under `app/Domain/**`.
+**`"labelMs" has no matching "labelEn"`** — G4. Both languages, from day one.
+
+**`src/domain must not import "next/navigation"`** — G7. Business logic does not know about the
+framework. Put the framework call in `src/app` and have it call a domain action.
+
+**`npm audit` reports high severity in `deepmerge-ts`** — known, recorded in
+[ADR 0004](adr/0004-nextjs-and-supabase.md). Build-time only, via Prisma's CLI. The fix is a
+breaking downgrade to Prisma 6. Do not "fix" it without reading that ADR.
 
 ---
 
 ## Rules that are not negotiable
 
-1. **Never point your `.env` at a real LPKmn database.** Seeded fake data only, on every machine
-   except production.
+1. **Never point `.env` at a real LPKmn database.** Seeded fake data only, everywhere except
+   production.
 2. **Never paste real applicant data into an AI tool** — no names, IC numbers, company details or
-   uploaded documents. See `CLAUDE.md` §9.
+   uploaded documents. Contractual and PDPA, not preference.
 3. **Never commit `.env`.** It is gitignored; keep it that way.
-4. `php artisan migrate:fresh` drops everything. Local only. Never staging, never production.
+4. `prisma migrate reset` drops everything. Local only.
+
+Full rules: [RULES.md](../RULES.md).

@@ -52,20 +52,21 @@ the part that becomes a reusable asset for the next LPKmn system.
 
 ## 2. Stack and why
 
-See `adr/0001-tech-stack.md` for the full decision record. Summary:
+See `adr/0004-nextjs-and-supabase.md` for the full decision record (it supersedes ADR 0001).
+Summary:
 
 | Layer | Choice |
 |---|---|
-| Framework | Laravel 13, PHP 8.5 |
-| Admin / CRUD | Filament 5 |
-| Database | PostgreSQL 16 + PostGIS |
-| Frontend | Blade + Livewire 3 + Tailwind |
-| PDF | `spatie/laravel-pdf` |
-| Queue | Redis + Horizon |
-| Auth | Fortify + two-factor |
-| Permissions | `spatie/laravel-permission` |
+| Framework | Next.js 16 (App Router), TypeScript |
+| Admin / CRUD | Refine + shadcn/ui |
+| Database | Supabase Postgres 16 + PostGIS |
+| ORM | Prisma 7 |
+| PDF | Puppeteer over admin-editable HTML |
+| Queue | BullMQ + Redis |
+| Auth | Auth.js + our own policy engine (ADR 0005) |
+| Permission filtering | Supabase Row Level Security |
 | Audit | custom |
-| Tests | Pest |
+| Tests | Vitest + Playwright |
 
 **The single most important choice is Filament.** It ships list tables with sorting, keyword search,
 filters and exports, plus a form builder and a permission-aware resource system. That is the bulk of
@@ -81,14 +82,15 @@ this team has the capacity to absorb. Pay the small cost now.
 ## 3. Layering rule
 
 ```
-Http / Filament   ──depends on──▶   Domain   ──depends on──▶   Support
+src/app   ──depends on──▶   src/domain   ──depends on──▶   src/lib
 ```
 
-- `app/Domain/**` may **not** import from `app/Filament/**` or `app/Http/**`.
-- `app/Support/**` may not import from `app/Domain/**`.
-- Business rules live in `Actions`, never in a Filament Resource or a controller.
+- `src/domain/**` may **not** import `next/*`, `react`, `@/app` or `@/components`.
+- `src/lib/**` may not import from `src/domain/**`.
+- Business rules live in domain actions, never in a route handler or a component.
 
-This is enforced by review, and it is what makes the platform layer reusable on the next project.
+This is enforced by the `kawalselia/domain-stays-pure` lint rule, not by review. It is also why
+porting this codebase from Laravel to Next.js cost hours rather than weeks.
 
 ---
 

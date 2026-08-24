@@ -199,3 +199,5 @@ Resolve these before or during month 1. Each one has an unbounded tail if left o
 | Q9 | Which 2–4 optional notification channels does LPKmn want | Unit IT | GP-16 |
 | Q10 | DKICT policy document — are there password rules beyond the 12-character minimum | Unit IT | GP-03 |
 | Q11 | KPI thresholds under ISMS / ISO 9001 / ABMS | Unit Integriti / Korporat | GP-19, P2 pricing |
+| Q12 | **Does LPKmn require system data to reside in Malaysia?** *"Adakah LPKmn menetapkan data sistem mesti berada dalam Malaysia?"* | Unit IT — ask in writing | Whether Supabase can be cloud-hosted at all. See [ADR 0004](adr/0004-nextjs-and-supabase.md). |
+| Q13 | Who provides hosting, and what is it? None of the four documents we hold mentions hosting at all — no cPanel, no server spec, no data-centre requirement. GP-23 implies the vendor provides HTTPS. | Tender files 01/02/05 | Deployment target, and RM 3,900 of recurring Supabase cost |

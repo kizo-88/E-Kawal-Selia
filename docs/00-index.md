@@ -19,15 +19,19 @@ Sebut Harga **LPKmn Bil. 02/2026**.
 | 08 | [Build Plan](08-build-plan.md) | Daily. Task-by-task execution order. |
 | 09 | [Local Setup](09-setup.md) | First day on the project, or when your environment breaks |
 
-Plus [CLAUDE.md](../CLAUDE.md) — working rules for every human and every AI tool on this repo.
+Plus **[RULES.md](../RULES.md)** — the highest-authority document in the repo, seven of whose
+rules are enforced by ESLint and fail the build. [CLAUDE.md](../CLAUDE.md) is the practical
+companion: stack, structure, patterns, commands.
 
 ## Decision records
 
 | ADR | Decision |
 |---|---|
-| [0001](adr/0001-tech-stack.md) | Laravel 13 + Filament 5 + PostgreSQL/PostGIS |
+| [0001](adr/0001-tech-stack.md) | ~~Laravel + Filament~~ — **superseded by 0004** |
 | [0002](adr/0002-configuration-over-code.md) | Anything LPKmn might change is data, not code |
 | [0003](adr/0003-soft-delete-and-snapshots.md) | Never physically delete; snapshot identities on historical records |
+| [0004](adr/0004-nextjs-and-supabase.md) | Next.js 16 + Supabase Postgres/PostGIS + RLS |
+| [0005](adr/0005-auth-not-supabase-auth.md) | Auth.js and our own policy engine, not Supabase Auth |
 
 ---
 

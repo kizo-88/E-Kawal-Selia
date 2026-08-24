@@ -1,0 +1,563 @@
+// e-Kawalselia — Lembaga Pelabuhan Kemaman
+//
+// Scope of this file: Stage 1.6 of docs/08-build-plan.md — the platform
+// foundation (config, audit, identity, RBAC, notification, documents).
+// The Modul Permohonan tables (applications, workflows, licences) arrive in
+// Stage 5; they are designed in docs/04-data-model.md §6-§8.
+//
+// Two rules bind every model here. Both are in RULES.md and both are enforced:
+//   G2  nothing is physically deleted — every model carries deletedAt
+//   G4  every user-facing string is bilingual — paired *Ms / *En columns
+//
+// Row Level Security policies live in prisma/migrations/*_rls/migration.sql.
+// They are what makes G5 structural rather than a thing a developer remembers.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+// ─────────────────────────────────────────────────────────── CONFIGURATION
+// GP-07, GP-08, GP-09. ADR 0002: anything LPKmn might change is data.
+
+model Setting {
+  id          BigInt    @id @default(autoincrement())
+  key         String    @unique
+  value       String?
+  /// string | int | bool | json | file
+  type        String    @default("string")
+  /// system | organisation | format | security | audit | notification
+  group       String
+  labelMs     String    @map("label_ms")
+  labelEn     String    @map("label_en")
+  description String?
+  isPublic    Boolean   @default(false) @map("is_public")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@index([group])
+  @@map("settings")
+}
+
+/// Every dropdown in the system. GP-09 forbids hard-coded option arrays;
+/// the no-hardcoded-lists ESLint rule enforces it at commit time.
+model LookupType {
+  id               BigInt        @id @default(autoincrement())
+  /// SCREAMING_SNAKE, e.g. NEGERI, JENIS_KAPAL
+  code             String        @unique
+  nameMs           String        @map("name_ms")
+  nameEn           String        @map("name_en")
+  description      String?
+  /// blocks deletion of types the system depends on
+  isSystem         Boolean       @default(false) @map("is_system")
+  /// lets an ordinary user request an addition, routed through GP-20
+  allowUserRequest Boolean       @default(false) @map("allow_user_request")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+  values           LookupValue[]
+
+  @@map("lookup_types")
+}
+
+model LookupValue {
+  id           BigInt     @id @default(autoincrement())
+  lookupTypeId BigInt     @map("lookup_type_id")
+  lookupType   LookupType @relation(fields: [lookupTypeId], references: [id], onDelete: Cascade)
+  code         String
+  labelMs      String     @map("label_ms")
+  labelEn      String     @map("label_en")
+  sortOrder    Int        @default(0) @map("sort_order")
+  active       Boolean    @default(true)
+  metadata     Json?
+  /// seed | admin | change_request
+  createdVia   String     @default("seed") @map("created_via")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  deletedAt    DateTime?  @map("deleted_at")
+
+  @@index([lookupTypeId, active, sortOrder])
+  @@map("lookup_values")
+}
+
+/// GP-11. At least three allowed formats per context, all admin-editable.
+model FilePolicy {
+  id                BigInt    @id @default(autoincrement())
+  /// PERMOHONAN_SOKONGAN, PROFIL_GAMBAR, ...
+  contextCode       String    @unique @map("context_code")
+  labelMs           String    @map("label_ms")
+  labelEn           String    @map("label_en")
+  allowedExtensions Json      @map("allowed_extensions")
+  allowedMimes      Json      @map("allowed_mimes")
+  maxSizeKb         Int       @default(5120) @map("max_size_kb")
+  maxFiles          Int       @default(1) @map("max_files")
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  @@map("file_policies")
+}
+
+// ─────────────────────────────────────────────────────────────────── AUDIT
+// GP-18, X-R01, X-R02.
+
+/// No deletedAt on purpose. Rows leave only via the retention purge that
+/// GP-18 requires, and that purge records itself in AuditPurgeRun.
+model AuditLog {
+  id                BigInt   @id @default(autoincrement())
+  userId            BigInt?  @map("user_id")
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// ADR 0003: survives the actor being deleted or renamed
+  userNameSnapshot  String?  @map("user_name_snapshot")
+  userRoleSnapshot  String?  @map("user_role_snapshot")
+  /// PERMOHONAN_DILULUSKAN — never "update", never "delete" (G3)
+  actionCode        String   @map("action_code")
+  /// the full human sentence a person reads in the audit report
+  actionLabelMs     String   @map("action_label_ms")
+  actionLabelEn     String   @map("action_label_en")
+  auditableType     String?  @map("auditable_type")
+  auditableId       BigInt?  @map("auditable_id")
+  /// LPK/LPS/2026/00123
+  referenceNo       String?  @map("reference_no")
+  workflowStageCode String?  @map("workflow_stage_code")
+  moduleCode        String?  @map("module_code")
+  pageCode          String?  @map("page_code")
+  ipAddress         String?  @map("ip_address")
+  userAgent         String?  @map("user_agent")
+  oldValues         Json?    @map("old_values")
+  newValues         Json?    @map("new_values")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([auditableType, auditableId])
+  @@index([moduleCode, createdAt])
+  @@index([referenceNo])
+  @@map("audit_logs")
+}
+
+model AuditPurgeRun {
+  id               BigInt   @id @default(autoincrement())
+  purgedBefore     DateTime @map("purged_before")
+  rowsDeleted      BigInt   @map("rows_deleted")
+  /// manual | schedule
+  triggeredBy      String   @map("triggered_by")
+  userId           BigInt?  @map("user_id")
+  userNameSnapshot String?  @map("user_name_snapshot")
+  runAt            DateTime @map("run_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("audit_purge_runs")
+}
+
+// ─────────────────────────────────────────────────────── IDENTITY & ACCESS
+// M5-R01, M5-R02, GP-01..GP-06.
+
+model User {
+  id           BigInt  @id @default(autoincrement())
+  /// public identifier; nothing user-facing ever routes by id
+  uuid         String  @unique @default(uuid())
+  name         String
+  email        String  @unique
+  phone        String?
+  /// encrypted at rest — see src/lib/crypto.ts
+  icNo         String? @map("ic_no")
+  /// internal | external
+  userCategory String  @default("external") @map("user_category")
+
+  passwordHash       String?   @map("password_hash")
+  mustChangePassword Boolean   @default(true) @map("must_change_password")
+  /// encrypted at rest
+  mfaSecret          String?   @map("mfa_secret")
+  mfaEnabledAt       DateTime? @map("mfa_enabled_at")
+  /// GP-03 lockout. Threshold lives in Setting, not in code.
+  failedAttempts     Int       @default(0) @map("failed_attempts")
+  lockedUntil        DateTime? @map("locked_until")
+
+  /// pending | active | inactive | archived (GP-02)
+  status           String    @default("pending")
+  emailVerifiedAt  DateTime? @map("email_verified_at")
+  profilePhotoPath String?   @map("profile_photo_path")
+  lastLoginAt      DateTime? @map("last_login_at")
+  preferredLocale  String    @default("ms") @map("preferred_locale")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  roles         UserRole[]
+  units         UserInternalUnit[]
+  organisations OrganisationUser[]       @relation("member")
+  undertakings  UserUndertaking[]
+  auditLogs     AuditLog[]
+  notifications NotificationMessage[]
+  preferences   NotificationPreference[]
+
+  @@index([userCategory, status])
+  @@map("users")
+}
+
+/// GP-01, GP-02. Five baseline levels are seeded with isSystem = true;
+/// unlimited further roles are creatable through the admin UI.
+model Role {
+  id          BigInt    @id @default(autoincrement())
+  code        String    @unique
+  nameMs      String    @map("name_ms")
+  nameEn      String    @map("name_en")
+  description String?
+  isSystem    Boolean   @default(false) @map("is_system")
+  active      Boolean   @default(true)
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  permissions RolePermission[]
+  users       UserRole[]
+  menuItems   MenuItemRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        BigInt    @id @default(autoincrement())
+  /// module.resource.action — e.g. permohonan.lesen_sokongan.approve
+  code      String    @unique
+  nameMs    String    @map("name_ms")
+  nameEn    String    @map("name_en")
+  group     String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  roles RolePermission[]
+
+  @@index([group])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       BigInt     @map("role_id")
+  permissionId BigInt     @map("permission_id")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+model UserRole {
+  userId    BigInt   @map("user_id")
+  roleId    BigInt   @map("role_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, roleId])
+  @@map("user_role")
+}
+
+model InternalUnit {
+  id        BigInt         @id @default(autoincrement())
+  code      String         @unique
+  nameMs    String         @map("name_ms")
+  nameEn    String         @map("name_en")
+  parentId  BigInt?        @map("parent_id")
+  parent    InternalUnit?  @relation("unitTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  InternalUnit[] @relation("unitTree")
+  sortOrder Int            @default(0) @map("sort_order")
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  deletedAt DateTime?      @map("deleted_at")
+
+  members UserInternalUnit[]
+
+  @@map("internal_units")
+}
+
+model UserInternalUnit {
+  userId         BigInt       @map("user_id")
+  internalUnitId BigInt       @map("internal_unit_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  internalUnit   InternalUnit @relation(fields: [internalUnitId], references: [id], onDelete: Cascade)
+  position       String?
+  isHead         Boolean      @default(false) @map("is_head")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@id([userId, internalUnitId])
+  @@map("user_internal_unit")
+}
+
+/// M5-R01. Syarikat, konsortium, individu, pengguna pelabuhan.
+model Organisation {
+  id             BigInt  @id @default(autoincrement())
+  uuid           String  @unique @default(uuid())
+  /// lookup JENIS_ORGANISASI
+  type           String
+  name           String
+  registrationNo String? @map("registration_no")
+
+  /// GP-08 requires the address as separate fields, never one blob.
+  addressLine1 String? @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  postcode     String?
+  city         String?
+  /// lookup NEGERI
+  stateCode    String? @map("state_code")
+  countryCode  String  @default("MY") @map("country_code")
+
+  phone      String?
+  email      String?
+  website    String?
+  status     String    @default("pending")
+  verifiedAt DateTime? @map("verified_at")
+  verifiedBy BigInt?   @map("verified_by")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  members OrganisationUser[]
+
+  @@index([type, status])
+  @@map("organisations")
+}
+
+/// Links a wakil syarikat to the company they act for.
+model OrganisationUser {
+  organisationId   BigInt       @map("organisation_id")
+  userId           BigInt       @map("user_id")
+  organisation     Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user             User         @relation("member", fields: [userId], references: [id], onDelete: Cascade)
+  roleInOrg        String?      @map("role_in_org")
+  isPrimaryContact Boolean      @default(false) @map("is_primary_contact")
+  verifiedAt       DateTime?    @map("verified_at")
+  verifiedBy       BigInt?      @map("verified_by")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+  deletedAt        DateTime?    @map("deleted_at")
+
+  @@id([organisationId, userId])
+  @@map("organisation_user")
+}
+
+// GP-06 Aku-Janji
+model UndertakingVersion {
+  id            BigInt    @id @default(autoincrement())
+  version       String    @unique
+  titleMs       String    @map("title_ms")
+  titleEn       String    @map("title_en")
+  bodyMs        String    @map("body_ms")
+  bodyEn        String    @map("body_en")
+  /// the downloadable official LPKmn form
+  templatePath  String?   @map("template_path")
+  effectiveFrom DateTime  @map("effective_from") @db.Date
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  acceptances UserUndertaking[]
+
+  @@map("undertaking_versions")
+}
+
+/// Never updated. A fresh acceptance is a new row (ADR 0003).
+model UserUndertaking {
+  id                         BigInt             @id @default(autoincrement())
+  userId                     BigInt             @map("user_id")
+  user                       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  undertakingVersionId       BigInt             @map("undertaking_version_id")
+  undertakingVersion         UndertakingVersion @relation(fields: [undertakingVersionId], references: [id])
+  undertakingVersionSnapshot String             @map("undertaking_version_snapshot")
+  acceptedAt                 DateTime           @map("accepted_at")
+  ipAddress                  String?            @map("ip_address")
+  userAgent                  String?            @map("user_agent")
+  createdAt                  DateTime           @default(now()) @map("created_at")
+
+  @@index([userId, acceptedAt])
+  @@map("user_undertakings")
+}
+
+model MenuItem {
+  id        BigInt     @id @default(autoincrement())
+  parentId  BigInt?    @map("parent_id")
+  parent    MenuItem?  @relation("menuTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  MenuItem[] @relation("menuTree")
+  code      String     @unique
+  labelMs   String     @map("label_ms")
+  labelEn   String     @map("label_en")
+  route     String?
+  icon      String?
+  sortOrder Int        @default(0) @map("sort_order")
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+
+  roles MenuItemRole[]
+
+  @@map("menu_items")
+}
+
+/// GP-01: menu visibility is separate from the underlying permission, so
+/// LPKmn can hide a menu without revoking anyone's access.
+model MenuItemRole {
+  menuItemId BigInt   @map("menu_item_id")
+  roleId     BigInt   @map("role_id")
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@id([menuItemId, roleId])
+  @@map("menu_item_role")
+}
+
+// ──────────────────────────────────────────────────────────── NOTIFICATION
+// GP-10, GP-16, X-R03, X-R04.
+
+model NotificationTemplate {
+  id        BigInt    @id @default(autoincrement())
+  code      String    @unique
+  /// inapp | email | sms
+  channel   String
+  /// pendaftaran | permohonan | semakan | kelulusan | pemberitahuan
+  category  String
+  subjectMs String?   @map("subject_ms")
+  subjectEn String?   @map("subject_en")
+  bodyMs    String    @map("body_ms")
+  bodyEn    String    @map("body_en")
+  variables Json?
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([category, channel])
+  @@map("notification_templates")
+}
+
+/// Delivery record for our own notification bus. Deliberately not called
+/// "notifications" so the name stays free for anything Supabase Realtime needs.
+model NotificationMessage {
+  id           BigInt    @id @default(autoincrement())
+  userId       BigInt    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateCode String?   @map("template_code")
+  channel      String
+  title        String
+  body         String
+  data         Json?
+  referenceNo  String?   @map("reference_no")
+  readAt       DateTime? @map("read_at")
+  sentAt       DateTime? @map("sent_at")
+  /// queued | sent | failed
+  status       String    @default("queued")
+  error        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, readAt])
+  @@index([status, channel])
+  @@map("notification_messages")
+}
+
+/// GP-16 requires per-user AND per-role control. Exactly one of userId /
+/// roleId is set on any given row.
+model NotificationPreference {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId    BigInt?  @map("role_id")
+  category  String
+  channel   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, category])
+  @@index([roleId, category])
+  @@map("notification_preferences")
+}
+
+model NotificationBroadcast {
+  id          BigInt    @id @default(autoincrement())
+  titleMs     String    @map("title_ms")
+  titleEn     String    @map("title_en")
+  bodyMs      String    @map("body_ms")
+  bodyEn      String    @map("body_en")
+  targetRoles Json?     @map("target_roles")
+  targetUnits Json?     @map("target_units")
+  channels    Json
+  scheduledAt DateTime? @map("scheduled_at")
+  sentAt      DateTime? @map("sent_at")
+  createdBy   BigInt?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@map("notification_broadcasts")
+}
+
+// ─────────────────────────────────────────────────────────────── DOCUMENTS
+// GP-13, M1-3, X-R11, X-R12.
+
+model DocumentTemplate {
+  id             BigInt    @id @default(autoincrement())
+  code           String    @unique
+  nameMs         String    @map("name_ms")
+  nameEn         String    @map("name_en")
+  /// lesen | permit | surat | borang | laporan
+  type           String
+  headerHtml     String?   @map("header_html")
+  bodyHtml       String    @map("body_html")
+  footerHtml     String?   @map("footer_html")
+  paperSize      String    @default("A4") @map("paper_size")
+  orientation    String    @default("portrait")
+  disclaimerMs   String?   @map("disclaimer_ms")
+  disclaimerEn   String?   @map("disclaimer_en")
+  version        Int       @default(1)
+  /// GP-13 confidentiality filtering
+  minAccessLevel String?   @map("min_access_level")
+  active         Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  @@map("document_templates")
+}
+
+model GeneratedDocument {
+  id               BigInt    @id @default(autoincrement())
+  templateCode     String    @map("template_code")
+  /// snapshot, so a reprint matches what was originally issued (ADR 0003)
+  templateVersion  Int       @map("template_version")
+  documentableType String?   @map("documentable_type")
+  documentableId   BigInt?   @map("documentable_id")
+  referenceNo      String?   @map("reference_no")
+  filePath         String    @map("file_path")
+  /// X-R11/X-R12. 32 random chars — never derived from the licence number
+  /// or a sequential id. See src/lib/qr-token.ts.
+  qrToken          String    @unique @map("qr_token")
+  validFrom        DateTime? @map("valid_from") @db.Date
+  validUntil       DateTime? @map("valid_until") @db.Date
+  generatedBy      BigInt?   @map("generated_by")
+  generatedAt      DateTime  @map("generated_at")
+  revokedAt        DateTime? @map("revoked_at")
+  revokeReason     String?   @map("revoke_reason")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  @@index([documentableType, documentableId])
+  @@map("generated_documents")
+}

@@ -25,7 +25,8 @@ Sistem web untuk LPKmn menguruskan **pelesenan, permit, pemaliman, lawatan tapak
 | [docs/07-compliance-checklist.md](docs/07-compliance-checklist.md) | 23 features mandatori LPKmn + ruangan bukti |
 | [docs/08-build-plan.md](docs/08-build-plan.md) | **Pelan coding — task demi task, ikut turutan** |
 | [docs/09-setup.md](docs/09-setup.md) | Cara pasang environment tempatan |
-| [CLAUDE.md](CLAUDE.md) | Peraturan untuk semua manusia + semua tool AI dalam repo ini |
+| **[RULES.md](RULES.md)** | **Peraturan tertinggi. Tujuh daripadanya dikuatkuasakan oleh ESLint dan akan gagalkan build.** |
+| [CLAUDE.md](CLAUDE.md) | Stack, struktur, corak, arahan |
 
 ## Bahasa dokumen
 
@@ -37,17 +38,21 @@ Istilah domain kekal **Bahasa Melayu** (permohonan, lesen, malim, kawalselia) se
 Ikut [docs/09-setup.md](docs/09-setup.md). Ringkasnya:
 
 ```bash
-composer install && npm install && cp .env.example .env && php artisan key:generate
+npm install && cp .env.example .env
 ```
 
 ```bash
-docker compose up -d && php artisan migrate --seed
+npx supabase start && npm run db:migrate && npm run db:seed
+```
+
+```bash
+npm run dev
 ```
 
 ## Status
 
-**PRA-BID.** Rangka aplikasi sudah ada (Laravel 13 + Filament 5, migrasi Stage 1.6, base model,
-ujian seni bina). Tugas Stage 2 ke atas masih tersekat sehingga:
+**PRA-BID.** Rangka aplikasi sudah ada (Next.js 16 + Supabase, skema Prisma 25 jadual, polisi RLS,
+tujuh peraturan dikuatkuasakan oleh ESLint). Tugas Stage 2 ke atas masih tersekat sehingga:
 
 1. Fail tender **01, 02, 05** diperoleh (tempoh siap, LAD, tempoh waranti, milestone bayaran)
 2. URS/BRS ditandatangan Unit M/T

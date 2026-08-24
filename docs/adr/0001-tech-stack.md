@@ -1,6 +1,12 @@
 # ADR 0001 — Technology stack
 
-**Status:** Accepted · **Date:** 2026-08-24 · **Implemented:** 2026-08-24 · **Decision owner:** Lead developer
+**Status:** SUPERSEDED by [ADR 0004](0004-nextjs-and-supabase.md) · **Date:** 2026-08-24
+
+> This ADR chose Laravel + Filament and justified it partly with *"team knows it"* — an
+> assumption that was never checked with the team. It was wrong: the team is React-first.
+> ADR 0004 reverses the decision and shows the corrected arithmetic. Kept because the
+> reasoning about Filament, PostGIS and admin-panel cost still holds, and if the hosting or
+> residency answer ever forces a rethink, this is where that argument already lives.
 
 Cheap to reverse in week 1. Expensive from week 4. Effectively impossible from month 3.
 
