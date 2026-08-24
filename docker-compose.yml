@@ -1,0 +1,58 @@
+# Local services for e-Kawalselia.
+#
+# PHP runs on the host (scoop install php composer). Only the stateful pieces
+# live in Docker so every developer and intern gets an identical database.
+#
+#   docker compose up -d
+#   php artisan migrate --seed
+#
+# PostGIS is present from day one on purpose: X-R07 (Port Limit / MRA Area
+# geofencing) needs it in Phase 2, and this team cannot absorb a mid-project
+# database migration. See docs/adr/0001-tech-stack.md.
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: kawalselia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kawalselia
+      POSTGRES_USER: kawalselia
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kawalselia -d kawalselia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: kawalselia-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Catches every outbound mail in development so no test notification can
+  # reach a real applicant. UI at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: kawalselia-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres-data:
+  redis-data:

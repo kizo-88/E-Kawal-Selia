@@ -1,6 +1,6 @@
 # ADR 0001 — Technology stack
 
-**Status:** Proposed · **Date:** 2026-08-24 · **Decision owner:** Lead developer
+**Status:** Accepted · **Date:** 2026-08-24 · **Implemented:** 2026-08-24 · **Decision owner:** Lead developer
 
 Cheap to reverse in week 1. Expensive from week 4. Effectively impossible from month 3.
 
@@ -16,7 +16,7 @@ Cheap to reverse in week 1. Expensive from week 4. Effectively impossible from m
 
 ## Decision
 
-**Laravel 11 (PHP 8.3) + Filament 3 + PostgreSQL 16 with PostGIS.**
+**Laravel 13 (PHP 8.5) + Filament 5 + PostgreSQL 16 with PostGIS.**
 
 Supporting choices: Livewire 3 + Tailwind, `spatie/laravel-pdf`, Redis + Horizon,
 Fortify + two-factor, `spatie/laravel-permission`, Pest, custom audit layer.
@@ -65,6 +65,27 @@ Definition-of-Done gate, so friction here compounds.
 **Watch**
 - If Filament's list component cannot deliver all of GP-12 (quarter filter, Word export), the
   shortfall is ours to build. Verify in **task 3.5, month 3** — early enough to react.
+
+## Versions actually installed
+
+The first draft of this ADR said Laravel 11 / PHP 8.3 / Filament 3, written from memory before the
+toolchain existed. Composer resolved the current stable set instead, and the numbers below are what
+is in `composer.lock`:
+
+| Package | Version |
+|---|---|
+| PHP | 8.5.9 |
+| laravel/framework | 13.26.1 |
+| filament/filament | ^5.7 |
+| livewire/livewire | 3.x |
+| spatie/laravel-permission | ^8.3 |
+| spatie/laravel-pdf | ^2.13 |
+| laravel/fortify | ^1.38 |
+| pestphp/pest | ^4.7 |
+
+PHP 8.5 is newer than this project needs. It is what `scoop install php` provides and Laravel 13
+supports it, so there is no reason to pin lower — but if a package misbehaves, dropping to 8.4 is
+the first thing to try.
 
 ## Reversal
 

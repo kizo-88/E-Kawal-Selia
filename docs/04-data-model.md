@@ -130,9 +130,12 @@ The purge itself is audited — GP-18 gives admins a flush button, so the flush 
 `semakan` \| `kelulusan` \| `pemberitahuan`) · `subject_ms/_en` · `body_ms/_en` · `variables` jsonb ·
 `active`
 
-### `notifications` — P1
+### `notification_messages` — P1
 `user_id` · `template_code` · `channel` · `title` · `body` · `data` jsonb · `reference_no` ·
 `read_at` · `sent_at` · `status` (`queued`/`sent`/`failed`) · `error`
+
+> Named `notification_messages`, not `notifications`: the latter belongs to Laravel's
+> `DatabaseNotification`, which we do not use — we have our own bus (CLAUDE.md §6).
 
 ### `notification_preferences` — P1 · GP-16
 `user_id` (nullable → role-level default) · `role_id` (nullable) · `category` · `channel` ·

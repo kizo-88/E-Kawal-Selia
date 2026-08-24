@@ -24,6 +24,7 @@ Sistem web untuk LPKmn menguruskan **pelesenan, permit, pemaliman, lawatan tapak
 | [docs/06-costing.md](docs/06-costing.md) | P&L, break-even, titik kawalan |
 | [docs/07-compliance-checklist.md](docs/07-compliance-checklist.md) | 23 features mandatori LPKmn + ruangan bukti |
 | [docs/08-build-plan.md](docs/08-build-plan.md) | **Pelan coding — task demi task, ikut turutan** |
+| [docs/09-setup.md](docs/09-setup.md) | Cara pasang environment tempatan |
 | [CLAUDE.md](CLAUDE.md) | Peraturan untuk semua manusia + semua tool AI dalam repo ini |
 
 ## Bahasa dokumen
@@ -31,9 +32,22 @@ Sistem web untuk LPKmn menguruskan **pelesenan, permit, pemaliman, lawatan tapak
 Dokumen teknikal ditulis dalam **Bahasa Inggeris** supaya konsisten dengan kod dan tool AI.
 Istilah domain kekal **Bahasa Melayu** (permohonan, lesen, malim, kawalselia) sebab itu bahasa rasmi LPKmn dan akan muncul dalam UI, jadual dan kod.
 
+## Mula
+
+Ikut [docs/09-setup.md](docs/09-setup.md). Ringkasnya:
+
+```bash
+composer install && npm install && cp .env.example .env && php artisan key:generate
+```
+
+```bash
+docker compose up -d && php artisan migrate --seed
+```
+
 ## Status
 
-**PRA-BID.** Belum ada kod. Jangan mula coding sebelum:
+**PRA-BID.** Rangka aplikasi sudah ada (Laravel 13 + Filament 5, migrasi Stage 1.6, base model,
+ujian seni bina). Tugas Stage 2 ke atas masih tersekat sehingga:
 
 1. Fail tender **01, 02, 05** diperoleh (tempoh siap, LAD, tempoh waranti, milestone bayaran)
 2. URS/BRS ditandatangan Unit M/T

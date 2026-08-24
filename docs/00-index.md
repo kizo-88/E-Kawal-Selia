@@ -17,6 +17,7 @@ Sebut Harga **LPKmn Bil. 02/2026**.
 | 06 | [Costing](06-costing.md) | Before the bid, and at every monthly burn check |
 | 07 | [Compliance Checklist](07-compliance-checklist.md) | Every time a task is done — this is a payment gate |
 | 08 | [Build Plan](08-build-plan.md) | Daily. Task-by-task execution order. |
+| 09 | [Local Setup](09-setup.md) | First day on the project, or when your environment breaks |
 
 Plus [CLAUDE.md](../CLAUDE.md) — working rules for every human and every AI tool on this repo.
 
@@ -24,7 +25,7 @@ Plus [CLAUDE.md](../CLAUDE.md) — working rules for every human and every AI to
 
 | ADR | Decision |
 |---|---|
-| [0001](adr/0001-tech-stack.md) | Laravel 11 + Filament 3 + PostgreSQL/PostGIS |
+| [0001](adr/0001-tech-stack.md) | Laravel 13 + Filament 5 + PostgreSQL/PostGIS |
 | [0002](adr/0002-configuration-over-code.md) | Anything LPKmn might change is data, not code |
 | [0003](adr/0003-soft-delete-and-snapshots.md) | Never physically delete; snapshot identities on historical records |
 
@@ -43,9 +44,10 @@ Buffer between target and break-even: **0.6 months ≈ 13 working days.**
 
 ---
 
-## Current status: PRE-BID
+## Current status: PRE-BID, Stage 1 skeleton in place
 
-No code yet. Blocked on Stage 0 in [08-build-plan.md](08-build-plan.md):
+The application skeleton is committed (Laravel 13 + Filament 5, Stage 1.6 migrations, base model,
+architecture tests, Docker services). Build tasks from Stage 2 onward remain blocked on:
 
 1. Tender files **01, 02, 05** — warranty period, LAD penalty, delivery deadline, payment milestones
 2. Bid / no-bid decision against [06-costing.md](06-costing.md) §8

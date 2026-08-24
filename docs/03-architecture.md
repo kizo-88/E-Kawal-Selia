@@ -56,8 +56,8 @@ See `adr/0001-tech-stack.md` for the full decision record. Summary:
 
 | Layer | Choice |
 |---|---|
-| Framework | Laravel 11, PHP 8.3 |
-| Admin / CRUD | Filament 3 |
+| Framework | Laravel 13, PHP 8.5 |
+| Admin / CRUD | Filament 5 |
 | Database | PostgreSQL 16 + PostGIS |
 | Frontend | Blade + Livewire 3 + Tailwind |
 | PDF | `spatie/laravel-pdf` |

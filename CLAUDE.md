@@ -66,8 +66,8 @@ AI-generated code in these areas is **not** merged without the lead reading ever
 
 | Layer | Choice | Why |
 |---|---|---|
-| Framework | **Laravel 11** (PHP 8.3) | Team knows it; cheap hosting; fits Malaysian govt norms |
-| Admin / CRUD | **Filament 3** | Gives us RBAC UI, list tables with sort/search/export, and form builder — roughly 110 PD of the Garis Panduan for free |
+| Framework | **Laravel 13** (PHP 8.5) | Team knows it; cheap hosting; fits Malaysian govt norms |
+| Admin / CRUD | **Filament 5** | Gives us RBAC UI, list tables with sort/search/export, and form builder — roughly 110 PD of the Garis Panduan for free |
 | Database | **PostgreSQL 16 + PostGIS** | PostGIS is required for Port Limit / MRA geofencing in Phase 2. Do not pick MySQL. |
 | Frontend | Blade + Livewire 3 + Tailwind | Ships with Filament; no separate SPA to maintain |
 | PDF | `spatie/laravel-pdf` (Chromium) | HTML templates admins can edit, not hard-coded layouts |
