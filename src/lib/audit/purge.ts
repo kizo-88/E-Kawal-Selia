@@ -99,8 +99,11 @@ export async function deleteOldAuditLogs(
       pageCode: 'audit_purge',
       ipAddress: null,
       userAgent: null,
-      oldValues: null,
-      newValues: null,
+      // Prisma distinguishes "no value" (undefined) from "JSON null"
+      // (Prisma.JsonNull) on Json columns. A purge has no field diff, so this
+      // is genuinely absent.
+      oldValues: undefined,
+      newValues: undefined,
     },
   })
 

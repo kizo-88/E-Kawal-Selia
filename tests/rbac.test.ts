@@ -66,8 +66,8 @@ describe('canArchiveRole', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.reason).toBe('IS_SYSTEM')
-      expect(result.messageMs.length).toBeGreaterThan(0)
-      expect(result.messageEn.length).toBeGreaterThan(0)
+      expect(result.reasonMs.length).toBeGreaterThan(0)
+      expect(result.reasonEn.length).toBeGreaterThan(0)
     }
   })
 

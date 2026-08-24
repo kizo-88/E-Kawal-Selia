@@ -78,8 +78,8 @@ export function canArchiveRole(role: { isSystem: boolean }):
     return {
       ok: false,
       reason: 'IS_SYSTEM',
-      messageMs: 'Peranan sistem tidak boleh diarkibkan atau dipadam.',
-      messageEn: 'A system role cannot be archived or deleted.',
+      reasonMs: 'Peranan sistem tidak boleh diarkibkan atau dipadam.',
+      reasonEn: 'A system role cannot be archived or deleted.',
     }
   }
   return { ok: true }
