@@ -42,9 +42,12 @@ export const SETTING_KEYS = {
 
   'security.session_timeout_minutes': 'int',
   'security.lockout_threshold': 'int',
+  'security.lockout_duration_minutes': 'int',
   'security.password_min_length': 'int',
+  'security.password_max_length': 'int',
   'security.password_require_mixed_case': 'bool',
   'security.password_require_symbol': 'bool',
+  'security.password_require_digit': 'bool',
   'security.mfa_required': 'bool',
 
   'audit.retention_days': 'int',
@@ -83,9 +86,12 @@ const FALLBACKS: Record<SettingKey, string> = {
 
   'security.session_timeout_minutes': '10',
   'security.lockout_threshold': '3',
+  'security.lockout_duration_minutes': '15',
   'security.password_min_length': '12',
+  'security.password_max_length': '128',
   'security.password_require_mixed_case': 'true',
   'security.password_require_symbol': 'true',
+  'security.password_require_digit': 'true',
   'security.mfa_required': 'true',
 
   'audit.retention_days': '1095',
@@ -172,11 +178,20 @@ export async function getSetting<K extends SettingKey>(
  */
 export async function getSecurityPolicy() {
   return {
-    sessionTimeoutMinutes: await getSetting('security.session_timeout_minutes'),
-    lockoutThreshold: await getSetting('security.lockout_threshold'),
-    passwordMinLength: await getSetting('security.password_min_length'),
-    passwordRequireMixedCase: await getSetting('security.password_require_mixed_case'),
-    passwordRequireSymbol: await getSetting('security.password_require_symbol'),
+    session: {
+      timeoutMinutes: await getSetting('security.session_timeout_minutes'),
+    },
+    lockout: {
+      threshold: await getSetting('security.lockout_threshold'),
+      durationMinutes: await getSetting('security.lockout_duration_minutes'),
+    },
+    password: {
+      minLength: await getSetting('security.password_min_length'),
+      maxLength: await getSetting('security.password_max_length'),
+      requireMixedCase: await getSetting('security.password_require_mixed_case'),
+      requireSymbol: await getSetting('security.password_require_symbol'),
+      requireDigit: await getSetting('security.password_require_digit'),
+    },
     mfaRequired: await getSetting('security.mfa_required'),
   }
 }
