@@ -29,6 +29,9 @@ jobs:
       - name: RULES.md is enforced
         run: npm run lint
 
+      - name: Types
+        run: npm run typecheck
+
       - name: Tests, including the tests that guard the rules
         run: npm run test
 

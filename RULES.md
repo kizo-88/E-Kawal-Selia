@@ -172,10 +172,14 @@ Every silent yes costs about **RM 17,500 per month** of slip.
 ## Checking your work
 
 ```bash
-npm run lint && npm run test
+npm run verify
 ```
 
-Both must be clean. CI runs the same two commands and blocks the PR otherwise.
+That is lint + typecheck + tests. All three must be clean, and CI runs the same.
+
+Do not substitute `npm run lint && npm run test`: neither typechecks, so a
+broken build reads as green locally and fails in CI after the merge. That has
+already happened once on this project.
 
 The rules themselves are tested in [`tests/rules.test.ts`](tests/rules.test.ts) — each one has a
 violation that must be caught and a clean case that must not be. A rule that silently stopped

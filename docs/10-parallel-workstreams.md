@@ -49,7 +49,7 @@ git checkout -b lane/claude    # or lane/gemini, lane/opencode
 1. Each lane works on its own branch, and rebases on `main` at the start of every session.
 2. Before pushing, **every lane runs the same two commands** and both must be clean:
    ```bash
-   npm run lint && npm run test
+   npm run verify
    ```
 3. The lead merges to `main`. No lane merges its own branch.
 4. `main` is always deployable.
@@ -155,7 +155,7 @@ Keep query building pure and testable without a database, the way
 src/lib/uploads/file-policy.ts is. That is what makes the filter matrix provable
 rather than hopeful.
 
-Verify with: npm run lint && npm run test
+Verify with: npm run verify
 ```
 
 **Gemini / Antigravity — dashboard, admin shell, table presentation**
@@ -193,7 +193,7 @@ docs/evidence/GP-22/.
 
 G4: every user-facing string needs Malay and English. The lint rule enforces it.
 
-Verify at 375px, 768px and 1280px, and with: npm run lint && npm run test
+Verify at 375px, 768px and 1280px, and with: npm run verify
 ```
 
 **OpenCode — export engine**
@@ -232,7 +232,7 @@ else is.
 
 Keep row-to-cell shaping pure and testable without a database.
 
-Verify with: npm run lint && npm run test
+Verify with: npm run verify
 ```
 
 ---
@@ -287,7 +287,7 @@ through redact().
 This code falls under G6: it will be read line by line before merge. Write it
 to be read.
 
-Verify with: npm run lint && npm run test
+Verify with: npm run verify
 ```
 
 ### Gemini / Antigravity — front page and design system
@@ -330,7 +330,7 @@ G4 applies to every string you write: anything user-facing needs a Malay and an
 English value. Phase 1 displays Malay, but the English must exist. The
 require-bilingual lint rule will stop you if you forget.
 
-Verify visually at 375px, 768px and 1280px, and with: npm run lint && npm run test
+Verify visually at 375px, 768px and 1280px, and with: npm run verify
 ```
 
 ### OpenCode — roles, menu registry, audit purge
@@ -383,7 +383,7 @@ Every user-facing string needs a Malay and an English value (G4).
 Prefer pure functions the tests can reach without a database, following
 src/lib/uploads/file-policy.ts.
 
-Verify with: npm run lint && npm run test
+Verify with: npm run verify
 ```
 
 ---
