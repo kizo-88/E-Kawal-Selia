@@ -18,6 +18,7 @@ Sebut Harga **LPKmn Bil. 02/2026**.
 | 07 | [Compliance Checklist](07-compliance-checklist.md) | Every time a task is done — this is a payment gate |
 | 08 | [Build Plan](08-build-plan.md) | Daily. Task-by-task execution order. |
 | 09 | [Local Setup](09-setup.md) | First day on the project, or when your environment breaks |
+| 10 | [Parallel Workstreams](10-parallel-workstreams.md) | Running Claude Code, Gemini and OpenCode at once — ownership map and per-agent prompts |
 
 Plus **[RULES.md](../RULES.md)** — the highest-authority document in the repo, seven of whose
 rules are enforced by ESLint and fail the build. [CLAUDE.md](../CLAUDE.md) is the practical
