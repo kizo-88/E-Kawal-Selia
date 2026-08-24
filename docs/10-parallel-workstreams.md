@@ -68,15 +68,172 @@ No file overlap at all. Start all three at once.
 | Gemini | 2.13 design system, front page, login screen | GP-21, GP-22 |
 | OpenCode | 2.6 roles service, 2.7 menu registry, 2.11 audit purge | GP-01, GP-02, GP-18 |
 
-## Round 2 — after Round 1 merges
+## Round 1 outcome
 
-Gemini's components must exist before OpenCode builds admin screens on them.
+| Lane | Status |
+|---|---|
+| Claude Code | Merged. Password policy, lockout, session, MFA. 46 tests. |
+| OpenCode | Merged. Roles service, menu registry, audit purge. 37 tests. |
+| Gemini | **Not committed.** The design system and front page exist in the working tree, but `lane/gemini` has zero commits ahead of `main`. |
+
+One lesson worth keeping: all three agents ran in **a single working directory**,
+switching branches in place. Two symptoms followed — a phantom test failure (a
+file being rewritten while vitest was reading it) and one lane's work trailing
+whatever branch happened to be checked out. Fix it before Round 2:
+
+```bash
+git worktree add ../kawalselia-gemini lane/gemini
+```
+
+```bash
+git worktree add ../kawalselia-opencode lane/opencode
+```
+
+Each agent then works in its own directory against the same `.git`. Merging is
+unchanged; nobody overwrites a file another agent is mid-read on.
+
+---
+
+## Round 2
+
+The dependency that shapes this round: **Gemini's table components need Claude's
+data contract.** So Claude publishes the TypeScript types in its opening commit
+and Gemini codes against the interface rather than waiting for the
+implementation.
+
+Reading across a boundary is fine — `import type` from another lane's directory
+is expected. *Editing* across a boundary is not.
 
 | Lane | Tasks | Requirement IDs |
 |---|---|---|
-| Claude Code | 3.5 universal list component | GP-12 |
-| Gemini | dashboard shell, responsive pass, help-note component | GP-15, GP-22 |
-| OpenCode | 3.7 exports (Excel, Word, PDF), audit trail screens | GP-12, GP-14, GP-18 |
+| Claude Code | 3.5 universal list: query contract, filters, sort, RLS-safe paging | GP-12 |
+| Gemini | dashboard, admin shell, table presentation, responsive + Lighthouse | GP-15, GP-22 |
+| OpenCode | 3.7 export engine: Excel, Word, PDF, chart data, iFrame embed | GP-12, GP-14 |
+
+Audit trail *screens* (GP-18) move to Round 3 — they need both Claude's list and
+Gemini's table components to exist. Starting them now would block on two lanes
+at once.
+
+### Round 2 prompts
+
+**Claude Code — universal list contract**
+
+```
+Read RULES.md, then CLAUDE.md, then docs/02-requirements.md (GP-12, GP-14).
+
+Branch: lane/claude. Rebase on main first — main now carries the auth engine
+and OpenCode's roles, menu and purge services.
+
+Build task 3.5: the universal list. GP-12 requires EVERY list in the system to
+have the same capabilities, so this is built once and consumed everywhere:
+
+  - sortable columns, admin-configurable default, ASC/DESC on click
+  - keyword search
+  - filters: by year, by date range (start-end), by quarter
+  - export reflecting the CURRENT view, default list or filtered result
+  - permission filtering
+
+You own: src/lib/table/**, tests/table.test.ts
+Do not touch: src/components/**, src/app/**, src/lib/exports/**
+
+Publish src/lib/table/types.ts IN YOUR FIRST COMMIT and push it. Gemini builds
+the presentation layer against those types and is blocked until they land.
+
+Permission filtering is not yours to implement in the query — RLS already does
+it (prisma/migrations/*_rls_policies). What you must do is route every query
+through withUser() from src/lib/db/scoped.ts. A query that skips it returns
+nothing and reads like a broken query rather than a missing scope.
+
+Paging must be keyset/cursor, not OFFSET. Audit and application lists will run
+to hundreds of thousands of rows, and OFFSET degrades badly past a few thousand.
+
+Quarter filtering means Malaysian calendar quarters (Jan-Mar, Apr-Jun, Jul-Sep,
+Oct-Dec), not a fiscal year. If you believe LPKmn uses a fiscal year, that is a
+question for the lead, not a guess.
+
+Keep query building pure and testable without a database, the way
+src/lib/uploads/file-policy.ts is. That is what makes the filter matrix provable
+rather than hopeful.
+
+Verify with: npm run lint && npm run test
+```
+
+**Gemini / Antigravity — dashboard, admin shell, table presentation**
+
+```
+Read RULES.md, then CLAUDE.md.
+
+Branch: lane/gemini. FIRST: commit your Round 1 work — the design system, front
+page and login card are currently uncommitted and at risk of being lost on the
+next branch switch. Then rebase on main.
+
+You own: src/components/**, src/app/(public)/**, src/app/(admin)/**,
+         src/app/globals.css, src/app/layout.tsx
+Do not touch: src/lib/**, src/domain/**, prisma/**. Import types from
+src/lib/table/types.ts — reading is expected, editing is not.
+
+Task 1 — dashboard (GP-15). Must contain all of:
+  a text and graphical summary, quick links, user and system info that VARIES BY
+  ACCESS LEVEL, application lists, table statistics, a histogram, work
+  notifications, and a login summary. GP-15 states icons and histograms are the
+  priority. Use fixture data; another lane wires it up.
+
+Task 2 — admin layout shell: sidebar built from the menu tree, breadcrumb, page
+header, user menu. The tree shape is in src/lib/menu/ — import the types, do not
+edit that directory.
+
+Task 3 — table presentation against src/lib/table/types.ts: column headers with
+sort indicators, search field, year / date-range / quarter filter controls,
+empty state, loading state, pagination. Presentation only, no querying.
+
+Task 4 — GP-22, which is contractual and evidenced with a screenshot: responsive
+and usable at 375px, contrasting menus, correct Bahasa Melayu, help notes on
+critical pages, and a Lighthouse report proving load speed. Save it to
+docs/evidence/GP-22/.
+
+G4: every user-facing string needs Malay and English. The lint rule enforces it.
+
+Verify at 375px, 768px and 1280px, and with: npm run lint && npm run test
+```
+
+**OpenCode — export engine**
+
+```
+Read RULES.md, then CLAUDE.md, then docs/02-requirements.md (GP-12, GP-14).
+
+Branch: lane/opencode. Rebase on main — your Round 1 work is merged.
+
+You own: src/lib/exports/**, tests/exports.test.ts
+Do not touch: src/components/**, src/lib/table/**, src/lib/auth/**, prisma/**
+
+Task 3.7 — the export engine. GP-12 requires text lists to export to Excel, Word
+AND PDF. GP-14 requires charts to export to Excel, Word, PDF, PNG and JPG. Word
+is the format teams usually skip; it is explicitly required. Use `docx`.
+
+GP-14 also requires every defined statistical report to exist in THREE forms:
+list (full detail), table (aggregates — transactions, approved, rejected), and
+graph derived from them. Build the data shaping for all three. Chart RENDERING
+belongs to Gemini; you produce the data it draws.
+
+GP-14 further requires an iFrame-embeddable URL so charts can appear on the
+LPKmn public website. Build the data endpoint. Anything reachable without a
+login exposes aggregates ONLY — never an applicant name, IC, company detail or
+reference number. Same disclosure rule as the QR verification page (X-R12).
+
+Exports reflect the CURRENT view, so the caller passes in already-filtered rows.
+Do not re-query inside the exporter: that would bypass the RLS scope the caller
+established, and the file would contain rows the user cannot see on screen.
+
+Every column header is user-facing, so both languages (G4). Take headers as
+input rather than deriving them from database column names.
+
+Ask the lead before adding any package. exceljs and docx are approved; nothing
+else is.
+
+Keep row-to-cell shaping pure and testable without a database.
+
+Verify with: npm run lint && npm run test
+```
 
 ---
 
