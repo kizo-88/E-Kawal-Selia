@@ -5,7 +5,8 @@ import { IconShieldCheck } from '../../../components/ui/icons'
 
 
 
-export const PRIVACY_SECTIONS = [
+const PRIVACY_SECTIONS = [
+
   {
     id: 'sec-1',
     titleMs: '1. Pengenalan & Komitmen Kerahsiaan',

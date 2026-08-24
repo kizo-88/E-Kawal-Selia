@@ -5,7 +5,8 @@ import { IconMail, IconPhone } from '../../../components/ui/icons'
 
 
 
-export const GUIDE_STEPS = [
+const GUIDE_STEPS = [
+
   {
     id: 'step-1',
     stepNumber: '01',
