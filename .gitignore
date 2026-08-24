@@ -1,0 +1,21 @@
+/vendor
+/node_modules
+/public/build
+/public/storage
+/storage/*.key
+/storage/app/private
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+/.fleet
+
+# never commit real LPKmn data
+/storage/app/lpkmn-*
+*.sql
+*.dump
