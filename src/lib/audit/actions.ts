@@ -1,0 +1,169 @@
+/**
+ * The audit action registry — G3, GP-18.
+ *
+ * The Garis Panduan is unusually specific about this:
+ *
+ *   "Mengelakkan penggunaan penyataan terbuka seperti hanya delete, update dan
+ *    pengaturcaraan."
+ *
+ * An audit row must name what happened, to which record, at which workflow
+ * stage, by whom. This output is read by Audit Dalam, used to evidence Piagam
+ * Pelanggan compliance, and — per X-R02 — to substantiate overtime claims. A
+ * row reading `update` is worthless for all three.
+ *
+ * So there is no free-text action. Every action is registered here with a
+ * bilingual sentence template, and `record()` interpolates it. Adding an action
+ * means adding a row here, which means a reviewer sees the wording.
+ */
+
+export interface AuditAction {
+  /** SCREAMING_SNAKE. Stored in audit_logs.action_code. */
+  readonly code: string
+  readonly moduleCode: string
+  /** Sentence templates. `{reference}`, `{actor}`, `{subject}`, `{stage}`. */
+  readonly templateMs: string
+  readonly templateEn: string
+}
+
+const define = <T extends Record<string, Omit<AuditAction, 'code'>>>(actions: T) =>
+  Object.freeze(
+    Object.fromEntries(
+      Object.entries(actions).map(([code, value]) => [code, { code, ...value }]),
+    ),
+  ) as { readonly [K in keyof T]: AuditAction }
+
+export const AUDIT_ACTIONS = define({
+  // ── Identity ────────────────────────────────────────────────────────────
+  PENGGUNA_LOG_MASUK: {
+    moduleCode: 'identiti',
+    templateMs: 'Pengguna {actor} berjaya log masuk ke sistem',
+    templateEn: 'User {actor} signed in successfully',
+  },
+  PENGGUNA_LOG_MASUK_GAGAL: {
+    moduleCode: 'identiti',
+    templateMs: 'Percubaan log masuk gagal bagi akaun {subject}',
+    templateEn: 'Failed sign-in attempt for account {subject}',
+  },
+  PENGGUNA_DIKUNCI: {
+    moduleCode: 'identiti',
+    templateMs: 'Akaun {subject} dikunci selepas mencapai had percubaan log masuk',
+    templateEn: 'Account {subject} locked after reaching the sign-in attempt limit',
+  },
+  PENGGUNA_DIDAFTARKAN: {
+    moduleCode: 'identiti',
+    templateMs: 'Pengguna baharu {subject} telah mendaftar dan menunggu pengesahan',
+    templateEn: 'New user {subject} registered and is awaiting verification',
+  },
+  PENGGUNA_DIAKTIFKAN: {
+    moduleCode: 'identiti',
+    templateMs: 'Akaun {subject} diaktifkan oleh {actor}',
+    templateEn: 'Account {subject} activated by {actor}',
+  },
+  PENGGUNA_DINYAHAKTIFKAN: {
+    moduleCode: 'identiti',
+    templateMs: 'Akaun {subject} dinyahaktifkan oleh {actor}',
+    templateEn: 'Account {subject} deactivated by {actor}',
+  },
+  KATA_LALUAN_DITUKAR: {
+    moduleCode: 'identiti',
+    templateMs: 'Kata laluan bagi akaun {subject} ditukar',
+    templateEn: 'Password changed for account {subject}',
+  },
+  MFA_DIAKTIFKAN: {
+    moduleCode: 'identiti',
+    templateMs: 'Pengesahan dua faktor diaktifkan bagi akaun {subject}',
+    templateEn: 'Two-factor authentication enabled for account {subject}',
+  },
+  PERANAN_DITETAPKAN: {
+    moduleCode: 'identiti',
+    templateMs: 'Peranan {subject} ditetapkan kepada pengguna {actor}',
+    templateEn: 'Role {subject} assigned to user {actor}',
+  },
+  AKU_JANJI_DITERIMA: {
+    moduleCode: 'identiti',
+    templateMs: 'Pengguna {actor} menerima Aku-Janji versi {subject}',
+    templateEn: 'User {actor} accepted the Aku-Janji, version {subject}',
+  },
+
+  // ── Configuration ───────────────────────────────────────────────────────
+  TETAPAN_DIKEMASKINI: {
+    moduleCode: 'konfigurasi',
+    templateMs: 'Tetapan sistem {subject} dikemas kini oleh {actor}',
+    templateEn: 'System setting {subject} updated by {actor}',
+  },
+  SENARAI_PILIHAN_DITAMBAH: {
+    moduleCode: 'konfigurasi',
+    templateMs: 'Nilai baharu {subject} ditambah ke dalam senarai pilihan oleh {actor}',
+    templateEn: 'New value {subject} added to the lookup list by {actor}',
+  },
+  SENARAI_PILIHAN_DINYAHAKTIFKAN: {
+    moduleCode: 'konfigurasi',
+    templateMs: 'Nilai {subject} dinyahaktifkan daripada senarai pilihan oleh {actor}',
+    templateEn: 'Value {subject} deactivated in the lookup list by {actor}',
+  },
+  POLISI_FAIL_DIKEMASKINI: {
+    moduleCode: 'konfigurasi',
+    templateMs: 'Polisi muat naik fail bagi {subject} dikemas kini oleh {actor}',
+    templateEn: 'File upload policy for {subject} updated by {actor}',
+  },
+
+  // ── Audit ───────────────────────────────────────────────────────────────
+  // GP-18 requires a flush button. The flush leaves a trace.
+  JEJAK_AUDIT_DIBUANG: {
+    moduleCode: 'audit',
+    templateMs: 'Jejak audit sebelum {subject} dibuang oleh {actor}',
+    templateEn: 'Audit records before {subject} were purged by {actor}',
+  },
+
+  // ── Documents ───────────────────────────────────────────────────────────
+  DOKUMEN_DIJANA: {
+    moduleCode: 'dokumen',
+    templateMs: 'Dokumen {subject} bagi rujukan {reference} dijana oleh {actor}',
+    templateEn: 'Document {subject} for reference {reference} generated by {actor}',
+  },
+  DOKUMEN_DIBATALKAN: {
+    moduleCode: 'dokumen',
+    templateMs: 'Dokumen bagi rujukan {reference} dibatalkan oleh {actor}',
+    templateEn: 'Document for reference {reference} revoked by {actor}',
+  },
+  DOKUMEN_DISAHKAN_QR: {
+    moduleCode: 'dokumen',
+    templateMs: 'Dokumen rujukan {reference} disemak melalui kod QR',
+    templateEn: 'Document reference {reference} was verified via QR code',
+  },
+
+  // ── Notifications ───────────────────────────────────────────────────────
+  PEMBERITAHUAN_DIHANTAR: {
+    moduleCode: 'pemberitahuan',
+    templateMs: 'Pemberitahuan {subject} dihantar kepada {actor} melalui {stage}',
+    templateEn: 'Notification {subject} sent to {actor} via {stage}',
+  },
+  SIARAN_DIHANTAR: {
+    moduleCode: 'pemberitahuan',
+    templateMs: 'Siaran umum {subject} dihantar oleh {actor}',
+    templateEn: 'Broadcast {subject} sent by {actor}',
+  },
+})
+
+export type AuditActionCode = keyof typeof AUDIT_ACTIONS
+
+export interface AuditTemplateValues {
+  actor?: string
+  subject?: string
+  reference?: string
+  stage?: string
+}
+
+/**
+ * Fills a sentence template.
+ *
+ * A placeholder with no value becomes an em dash rather than the literal
+ * `{subject}`, because a slightly vague audit line is recoverable and a line
+ * containing template syntax looks like a bug to the auditor reading it.
+ */
+export function renderAuditLabel(template: string, values: AuditTemplateValues): string {
+  return template.replace(/\{(actor|subject|reference|stage)\}/g, (_, key: string) => {
+    const value = values[key as keyof AuditTemplateValues]
+    return value && value.trim() !== '' ? value : '—'
+  })
+}
