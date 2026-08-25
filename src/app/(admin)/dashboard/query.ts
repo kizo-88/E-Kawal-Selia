@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { withUser } from '../../../lib/db/scoped'
 
 export interface DashboardSummaryStats {

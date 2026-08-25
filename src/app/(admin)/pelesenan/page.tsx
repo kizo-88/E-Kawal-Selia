@@ -11,7 +11,7 @@ import {
   IconQrCode,
   IconShip,
 } from '../../../components/ui/icons'
-import { BASELINE_LICENCES_DATA, type IssuedLicenceRow } from './query'
+import { BASELINE_LICENCES_DATA, type IssuedLicenceRow } from './baseline'
 import { downloadLicencePdf } from './actions'
 
 export default function PelesenanPage() {

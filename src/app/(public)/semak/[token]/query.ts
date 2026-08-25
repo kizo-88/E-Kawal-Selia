@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { asAnonymous } from '../../../../lib/db/scoped'
 
 export interface PublicVerificationResult {

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { withUser } from "@/lib/db/scoped";
 import { Prisma } from "@prisma/client";
 import { malaysianQuarterRange } from "@/lib/exports/audit";

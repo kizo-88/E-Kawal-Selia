@@ -15,7 +15,7 @@ import { Button } from '../../../components/ui/button'
 import { HelpNote } from '../../../components/ui/help-note'
 import { IconFileText } from '../../../components/ui/icons'
 import { STATUS_OPTIONS } from '../../../components/dashboard/recent-applications-table'
-import { BASELINE_APPLICATIONS, type ApplicationRowData } from './query'
+import { BASELINE_APPLICATIONS, type ApplicationRowData } from './baseline'
 
 const PERMOHONAN_HELP_ITEMS = [
   {

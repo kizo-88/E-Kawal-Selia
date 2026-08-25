@@ -10,7 +10,7 @@ import {
   IconDownload,
   IconSearch,
 } from '../../../components/ui/icons'
-import { BASELINE_CIRCULARS, type CircularRecord } from './query'
+import { BASELINE_CIRCULARS, type CircularRecord } from './baseline'
 import { downloadCircular } from './actions'
 
 export default function PekelilingPage() {
