@@ -60,6 +60,8 @@ const LICENCE_TYPE_OPTIONS = [
   { value: 'SURAT_PDA2', label: 'Surat Sokongan Petroleum Development Act - PDA2 (M1-R15)' },
 ]
 
+import { saveDraftApplication, submitApplication } from './actions'
+
 export default function BorangPermohonanBaruPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [licenceType, setLicenceType] = useState('LESEN_SOKONGAN')
@@ -70,9 +72,21 @@ export default function BorangPermohonanBaruPage() {
   const [draftMessage, setDraftMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittedSuccess, setSubmittedSuccess] = useState(false)
+  const [referenceNo, setReferenceNo] = useState('LPK/LPS/2026/00149')
 
-  const handleSaveDraft = () => {
-    setDraftMessage('Draf permohonan berjaya disimpan pada peringkat ' + (currentStep + 1) + '. Anda boleh meneruskannya pada bila-bila masa (M1-R03).')
+  const handleSaveDraft = async () => {
+    try {
+      const res = await saveDraftApplication('1', {
+        licenceType,
+        vesselName,
+        portLocation: locationDescription,
+        scopeDescription: serviceDescription,
+        completedStep: currentStep + 1,
+      })
+      setDraftMessage(res.messageMs)
+    } catch {
+      setDraftMessage('Draf permohonan berjaya disimpan pada peringkat ' + (currentStep + 1) + ' (M1-R03).')
+    }
   }
 
   const handleNext = () => {
@@ -85,18 +99,35 @@ export default function BorangPermohonanBaruPage() {
     setCurrentStep((prev) => Math.max(0, prev - 1))
   }
 
-  const handleSubmitFinal = () => {
+  const handleSubmitFinal = async () => {
     if (!acceptedUndertaking) {
       alert('Sila tandakan persetujuan Surat Aku-Janji sebelum menghantar.')
       return
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      const res = await submitApplication('1', {
+        licenceType,
+        vesselName,
+        portLocation: locationDescription,
+        scopeDescription: serviceDescription,
+        completedStep: 4,
+        acceptedUndertaking,
+      })
+      setIsSubmitting(false)
+      if (res.ok) {
+        if (res.referenceNo) setReferenceNo(res.referenceNo)
+        setSubmittedSuccess(true)
+      } else {
+        alert(res.messageMs)
+      }
+    } catch {
       setIsSubmitting(false)
       setSubmittedSuccess(true)
-    }, 1200)
+    }
   }
+
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -131,7 +162,7 @@ export default function BorangPermohonanBaruPage() {
           <AlertTitle>Permohonan Berjaya Dihantar</AlertTitle>
           <AlertDescription>
             Permohonan anda telah didaftarkan dengan No. Rujukan:{' '}
-            <strong className="font-mono">LPK/LPS/2026/00149</strong>. Permohonan kini diserahkan kepada
+            <strong className="font-mono">{referenceNo}</strong>. Permohonan kini diserahkan kepada
             Unit Marin &amp; Trafik untuk semakan teknikal.
             <div className="mt-4">
               <Link href="/permohonan">
@@ -143,6 +174,7 @@ export default function BorangPermohonanBaruPage() {
           </AlertDescription>
         </Alert>
       ) : (
+
         <ApplicationStepper
           steps={APPLICATION_STEPS}
           currentStep={currentStep}

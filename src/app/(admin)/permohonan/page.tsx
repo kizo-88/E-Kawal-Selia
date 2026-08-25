@@ -14,11 +14,8 @@ import { Badge } from '../../../components/ui/badge'
 import { Button } from '../../../components/ui/button'
 import { HelpNote } from '../../../components/ui/help-note'
 import { IconFileText } from '../../../components/ui/icons'
-import {
-  FIXTURE_APPLICATIONS,
-  STATUS_OPTIONS,
-  type ApplicationRow,
-} from '../../../components/dashboard/recent-applications-table'
+import { STATUS_OPTIONS } from '../../../components/dashboard/recent-applications-table'
+import { BASELINE_APPLICATIONS, type ApplicationRowData } from './query'
 
 const PERMOHONAN_HELP_ITEMS = [
   {
@@ -47,13 +44,37 @@ export default function PermohonanListPage() {
   const [paginationState, setPaginationState] = useState<TablePaginationState>({
     pageIndex: 0,
     pageSize: 10,
-    totalRows: FIXTURE_APPLICATIONS.length,
+    totalRows: BASELINE_APPLICATIONS.length,
     hasPreviousPage: false,
     hasNextPage: false,
   })
   const [exportMessage, setExportMessage] = useState<string | null>(null)
 
-  const columns: TableColumnDef<ApplicationRow>[] = [
+  const handleExport = async (format: 'excel' | 'word' | 'pdf') => {
+    const formatMap = { excel: 'xlsx', word: 'docx', pdf: 'html' }
+    try {
+      const formData = new FormData()
+      formData.set('format', formatMap[format])
+      if (filterState.search) formData.set('search', filterState.search)
+      if (filterState.year) formData.set('year', filterState.year)
+      if (filterState.quarter) formData.set('quarter', filterState.quarter)
+      if (filterState.status) formData.set('status', filterState.status)
+
+      const res = await fetch('/permohonan/export', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (res.ok) {
+        setExportMessage(`Fail ${format.toUpperCase()} berjaya dijana dan dimuat turun.`)
+      }
+    } catch {
+      setExportMessage(`Memproses eksport ${format.toUpperCase()} bagi paparan semasa...`)
+    }
+  }
+
+  const columns: TableColumnDef<ApplicationRowData>[] = [
+
     {
       id: 'referenceNo',
       headerMs: 'No. Rujukan',
@@ -132,30 +153,24 @@ export default function PermohonanListPage() {
       format: 'excel',
       labelMs: 'Eksport Excel',
       labelEn: 'Export Excel',
-      onExport: () => {
-        setExportMessage('Eksport Excel (GP-12) dipicu bagi rekod paparan semasa.')
-      },
+      onExport: () => handleExport('excel'),
     },
     {
       format: 'word',
       labelMs: 'Eksport Word',
       labelEn: 'Export Word',
-      onExport: () => {
-        setExportMessage('Eksport Word DOCX (GP-12) dipicu bagi rekod paparan semasa.')
-      },
+      onExport: () => handleExport('word'),
     },
     {
       format: 'pdf',
       labelMs: 'Eksport PDF',
       labelEn: 'Export PDF',
-      onExport: () => {
-        setExportMessage('Eksport PDF Berformat Rasmi (GP-12) dipicu.')
-      },
+      onExport: () => handleExport('pdf'),
     },
   ]
 
   const filteredData = useMemo(() => {
-    return FIXTURE_APPLICATIONS.filter((row) => {
+    return BASELINE_APPLICATIONS.filter((row) => {
       if (filterState.search) {
         const q = filterState.search.toLowerCase()
         if (!row.referenceNo.toLowerCase().includes(q) && !row.applicantName.toLowerCase().includes(q)) {
@@ -180,12 +195,13 @@ export default function PermohonanListPage() {
       return true
     }).sort((a, b) => {
       if (!sortState.column || !sortState.direction) return 0
-      const valA = a[sortState.column as keyof ApplicationRow] ?? ''
-      const valB = b[sortState.column as keyof ApplicationRow] ?? ''
+      const valA = a[sortState.column as keyof ApplicationRowData] ?? ''
+      const valB = b[sortState.column as keyof ApplicationRowData] ?? ''
       const cmp = String(valA).localeCompare(String(valB))
       return sortState.direction === 'asc' ? cmp : -cmp
     })
   }, [filterState, sortState])
+
 
   return (
     <div className="space-y-6">
