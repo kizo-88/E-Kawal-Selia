@@ -10,9 +10,22 @@
  * details, on any machine.
  */
 
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+import { validateFormSchema } from '../src/domain/application/form-schema'
+
+// Prisma 7 requires a driver adapter — a bare `new PrismaClient()` throws at
+// construction. The seeder uses DIRECT_URL rather than DATABASE_URL because
+// seeding is DDL-adjacent bulk work and Supabase's pooled endpoint is the wrong
+// connection for it.
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL
+
+if (!connectionString) {
+  throw new Error('DIRECT_URL or DATABASE_URL must be set to seed. See docs/09-setup.md.')
+}
+
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
 
 // ─────────────────────────────────────────────────────────────── settings
 const SETTINGS = [
@@ -99,6 +112,33 @@ const LOOKUPS: Array<{
     ],
   },
   {
+    code: 'JENIS_PERKHIDMATAN_SOKONGAN',
+    nameMs: 'Jenis Perkhidmatan Sokongan',
+    nameEn: 'Support Service Type',
+    allowUserRequest: true,
+    values: [
+      { code: 'TUNDA', labelMs: 'Perkhidmatan Tunda', labelEn: 'Towage Services' },
+      { code: 'TONGKANG', labelMs: 'Perkhidmatan Tongkang', labelEn: 'Barge Services' },
+      { code: 'BUNKERING', labelMs: 'Perkhidmatan Bunkering', labelEn: 'Bunkering Services' },
+      { code: 'STEVEDORING', labelMs: 'Perkhidmatan Stevedoring', labelEn: 'Stevedoring Services' },
+      { code: 'BEKALAN', labelMs: 'Bekalan Kapal', labelEn: 'Ship Supply' },
+      { code: 'LAIN_LAIN', labelMs: 'Lain-lain', labelEn: 'Other' },
+    ],
+  },
+  {
+    code: 'JENIS_AKTIVITI_PELABUHAN',
+    nameMs: 'Jenis Aktiviti Pelabuhan',
+    nameEn: 'Port Activity Type',
+    allowUserRequest: true,
+    values: [
+      { code: 'HOT_WORKS', labelMs: 'Kerja Panas (Hot Works)', labelEn: 'Hot Works' },
+      { code: 'SELAM', labelMs: 'Kerja Menyelam', labelEn: 'Diving Works' },
+      { code: 'BAIK_PULIH', labelMs: 'Kerja Baik Pulih', labelEn: 'Repair Works' },
+      { code: 'PEMINDAHAN', labelMs: 'Pemindahan Kargo', labelEn: 'Cargo Transfer' },
+      { code: 'LAIN_LAIN', labelMs: 'Lain-lain', labelEn: 'Other' },
+    ],
+  },
+  {
     code: 'SEBAB_PEMBATALAN',
     nameMs: 'Sebab Pembatalan',
     nameEn: 'Cancellation Reason',
@@ -166,6 +206,188 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   REVIEWER: ['identity.organisation.view', 'dokumen.generated.view', 'dokumen.generated.create'],
   END_USER: [],
 }
+
+
+// ═══════════════════════════════════════════ M1 — application types (ADR 0002)
+//
+// The three Phase 1 licence types exist as DATA. Each is one row plus a
+// form_schema plus a workflow. Adding Lesen Malim in Phase 2 means adding to
+// this array — no new route, no new model, no code branch.
+//
+// ⚠️ The field lists below are a WORKING DRAFT. The real forms are one of the
+// thirteen open questions in docs/02-requirements.md §E (Q2), and LPKmn has not
+// supplied them. They are shaped to be replaced: change the JSON, not the code.
+
+const WORKFLOWS = [
+  {
+    code: 'WF_LESEN_SOKONGAN',
+    nameMs: 'Aliran Kerja Lesen Perkhidmatan Sokongan',
+    nameEn: 'Support Services Licence Workflow',
+    stages: [
+      { sequence: 1, code: 'SEMAKAN_MT', nameMs: 'Semakan Unit Marin & Trafik', nameEn: 'Marine & Traffic Review', unitCode: 'MT', actionType: 'review', slaDays: 7, allowReturn: true, minApprovals: 1, isFinal: false },
+      { sequence: 2, code: 'SEMAKAN_KESELAMATAN', nameMs: 'Semakan Unit Keselamatan', nameEn: 'Security Review', unitCode: 'KESELAMATAN', actionType: 'review', slaDays: 5, allowReturn: true, minApprovals: 1, isFinal: false },
+      { sequence: 3, code: 'KELULUSAN', nameMs: 'Kelulusan Ketua Bahagian', nameEn: 'Division Head Approval', unitCode: 'OKS', actionType: 'approve', slaDays: 5, allowReturn: true, minApprovals: 1, isFinal: true },
+    ],
+  },
+  {
+    code: 'WF_PERMIT_AKTIVITI',
+    nameMs: 'Aliran Kerja Permit Aktiviti Pelabuhan',
+    nameEn: 'Port Activity Permit Workflow',
+    stages: [
+      { sequence: 1, code: 'SEMAKAN_MT', nameMs: 'Semakan Unit Marin & Trafik', nameEn: 'Marine & Traffic Review', unitCode: 'MT', actionType: 'review', slaDays: 3, allowReturn: true, minApprovals: 1, isFinal: false },
+      { sequence: 2, code: 'KELULUSAN', nameMs: 'Kelulusan Unit Marin & Trafik', nameEn: 'Marine & Traffic Approval', unitCode: 'MT', actionType: 'approve', slaDays: 2, allowReturn: true, minApprovals: 1, isFinal: true },
+    ],
+  },
+  {
+    code: 'WF_SURAT_PDA2',
+    nameMs: 'Aliran Kerja Surat Sokongan PDA2',
+    nameEn: 'PDA2 Support Letter Workflow',
+    stages: [
+      { sequence: 1, code: 'SEMAKAN_MT', nameMs: 'Semakan Unit Marin & Trafik', nameEn: 'Marine & Traffic Review', unitCode: 'MT', actionType: 'review', slaDays: 5, allowReturn: true, minApprovals: 1, isFinal: false },
+      { sequence: 2, code: 'KELULUSAN_PB', nameMs: 'Kelulusan Pengurus Besar', nameEn: 'General Manager Approval', unitCode: 'PB', actionType: 'approve', slaDays: 7, allowReturn: true, minApprovals: 1, isFinal: true },
+    ],
+  },
+]
+
+const APPLICATION_TYPES = [
+  {
+    code: 'LESEN_SOKONGAN',
+    nameMs: 'Lesen Perkhidmatan Sokongan Pelabuhan',
+    nameEn: 'Port Support Services Licence',
+    category: 'lesen',
+    referencePrefix: 'LPS',
+    workflowCode: 'WF_LESEN_SOKONGAN',
+    validityMonths: 12,
+    requiresPayment: true,
+    applicantCategories: ['SYARIKAT', 'KONSORTIUM'],
+    documents: [
+      { code: 'SSM', labelMs: 'Salinan Pendaftaran SSM', labelEn: 'SSM Registration Copy', required: true },
+      { code: 'PROFIL', labelMs: 'Profil Syarikat', labelEn: 'Company Profile', required: true },
+      { code: 'INSURANS', labelMs: 'Sijil Insurans', labelEn: 'Insurance Certificate', required: false },
+    ],
+    formSchema: {
+      version: 1,
+      steps: [
+        {
+          sequence: 1,
+          code: 'pemohon',
+          titleMs: 'Maklumat Syarikat',
+          titleEn: 'Company Details',
+          fields: [
+            { name: 'namaSyarikat', labelMs: 'Nama Syarikat', labelEn: 'Company Name', kind: 'text', required: true, minLength: 3, maxLength: 200 },
+            { name: 'noPendaftaran', labelMs: 'No. Pendaftaran SSM', labelEn: 'SSM Registration No.', kind: 'text', required: true, maxLength: 50 },
+            { name: 'negeri', labelMs: 'Negeri', labelEn: 'State', kind: 'select', required: true, lookupType: 'NEGERI' },
+            { name: 'alamat', labelMs: 'Alamat Perniagaan', labelEn: 'Business Address', kind: 'textarea', required: true, maxLength: 500 },
+          ],
+        },
+        {
+          sequence: 2,
+          code: 'perkhidmatan',
+          titleMs: 'Perkhidmatan Dipohon',
+          titleEn: 'Services Applied For',
+          fields: [
+            { name: 'jenisPerkhidmatan', labelMs: 'Jenis Perkhidmatan', labelEn: 'Service Type', kind: 'select', required: true, lookupType: 'JENIS_PERKHIDMATAN_SOKONGAN' },
+            { name: 'bilanganPekerja', labelMs: 'Bilangan Pekerja', labelEn: 'Number of Employees', kind: 'number', required: true, min: 1, max: 10000 },
+            { name: 'butiranLain', labelMs: 'Butiran Perkhidmatan Lain', labelEn: 'Other Service Details', kind: 'textarea', required: true, maxLength: 1000, showWhen: { field: 'jenisPerkhidmatan', equals: ['LAIN_LAIN'] } },
+          ],
+        },
+        {
+          sequence: 3,
+          code: 'dokumen',
+          titleMs: 'Dokumen Sokongan',
+          titleEn: 'Supporting Documents',
+          fields: [
+            { name: 'pengesahanDokumen', labelMs: 'Saya mengesahkan dokumen yang dilampirkan adalah benar', labelEn: 'I confirm the attached documents are true', kind: 'checkbox', required: true },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    code: 'PERMIT_AKTIVITI',
+    nameMs: 'Permit Aktiviti Pelabuhan',
+    nameEn: 'Port Activity Permit',
+    category: 'permit',
+    referencePrefix: 'PAP',
+    workflowCode: 'WF_PERMIT_AKTIVITI',
+    validityMonths: 3,
+    requiresPayment: true,
+    applicantCategories: ['SYARIKAT', 'KONSORTIUM', 'PENGGUNA_PELABUHAN'],
+    documents: [
+      { code: 'PELAN', labelMs: 'Pelan Aktiviti', labelEn: 'Activity Plan', required: true },
+      { code: 'RISIKO', labelMs: 'Penilaian Risiko', labelEn: 'Risk Assessment', required: true },
+    ],
+    formSchema: {
+      version: 1,
+      steps: [
+        {
+          sequence: 1,
+          code: 'aktiviti',
+          titleMs: 'Butiran Aktiviti',
+          titleEn: 'Activity Details',
+          fields: [
+            { name: 'jenisAktiviti', labelMs: 'Jenis Aktiviti', labelEn: 'Activity Type', kind: 'select', required: true, lookupType: 'JENIS_AKTIVITI_PELABUHAN' },
+            { name: 'tarikhMula', labelMs: 'Tarikh Mula', labelEn: 'Start Date', kind: 'date', required: true },
+            { name: 'tarikhTamat', labelMs: 'Tarikh Tamat', labelEn: 'End Date', kind: 'date', required: true },
+          ],
+        },
+        {
+          sequence: 2,
+          code: 'lokasi',
+          titleMs: 'Lokasi Aktiviti',
+          titleEn: 'Activity Location',
+          // X-R07 validates this against the real Port Limit and MRA polygons.
+          // That is Phase 2; Phase 1 captures the coordinate so the data is
+          // already there when the check arrives.
+          fields: [
+            { name: 'lokasi', labelMs: 'Keterangan Lokasi', labelEn: 'Location Description', kind: 'text', required: true, maxLength: 300, helpMs: 'Nyatakan lokasi tepat dalam kawasan pelabuhan.', helpEn: 'State the exact location within the port area.' },
+            { name: 'koordinat', labelMs: 'Koordinat', labelEn: 'Coordinates', kind: 'coordinate', required: false },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    code: 'SURAT_PDA2',
+    nameMs: 'Surat Sokongan PDA2',
+    nameEn: 'PDA2 Support Letter',
+    category: 'surat',
+    referencePrefix: 'PDA2',
+    workflowCode: 'WF_SURAT_PDA2',
+    validityMonths: 6,
+    requiresPayment: false,
+    applicantCategories: ['SYARIKAT'],
+    documents: [
+      { code: 'SSM', labelMs: 'Salinan Pendaftaran SSM', labelEn: 'SSM Registration Copy', required: true },
+      { code: 'BORANG_PDA', labelMs: 'Borang Permohonan PDA', labelEn: 'PDA Application Form', required: true },
+    ],
+    formSchema: {
+      version: 1,
+      steps: [
+        {
+          sequence: 1,
+          code: 'pemohon',
+          titleMs: 'Maklumat Pemohon',
+          titleEn: 'Applicant Details',
+          fields: [
+            { name: 'namaSyarikat', labelMs: 'Nama Syarikat', labelEn: 'Company Name', kind: 'text', required: true, minLength: 3, maxLength: 200 },
+            { name: 'noPendaftaran', labelMs: 'No. Pendaftaran SSM', labelEn: 'SSM Registration No.', kind: 'text', required: true, maxLength: 50 },
+          ],
+        },
+        {
+          sequence: 2,
+          code: 'tujuan',
+          titleMs: 'Tujuan Permohonan',
+          titleEn: 'Purpose of Application',
+          fields: [
+            { name: 'tujuan', labelMs: 'Tujuan Surat Sokongan', labelEn: 'Purpose of Support Letter', kind: 'textarea', required: true, maxLength: 1000 },
+            { name: 'skopKerja', labelMs: 'Skop Kerja', labelEn: 'Scope of Work', kind: 'textarea', required: true, maxLength: 1000 },
+          ],
+        },
+      ],
+    },
+  },
+]
 
 async function main() {
   console.log('Seeding configuration...')
@@ -247,6 +469,114 @@ async function main() {
     }
   }
   console.log(`  ${ROLES.length} roles, ${PERMISSIONS.length} permissions`)
+
+
+  // ── M1: workflows, then application types (ADR 0002)
+  const unitByCode = new Map(
+    (await prisma.internalUnit.findMany({ select: { id: true, code: true } })).map((u) => [
+      u.code,
+      u.id,
+    ]),
+  )
+
+  for (const wf of WORKFLOWS) {
+    const workflow = await prisma.workflow.upsert({
+      where: { code: wf.code },
+      update: { nameMs: wf.nameMs, nameEn: wf.nameEn },
+      create: { code: wf.code, nameMs: wf.nameMs, nameEn: wf.nameEn },
+    })
+
+    for (const st of wf.stages) {
+      const existing = await prisma.workflowStage.findFirst({
+        where: { workflowId: workflow.id, sequence: st.sequence },
+      })
+
+      const data = {
+        workflowId: workflow.id,
+        sequence: st.sequence,
+        code: st.code,
+        nameMs: st.nameMs,
+        nameEn: st.nameEn,
+        actorInternalUnitId: unitByCode.get(st.unitCode) ?? null,
+        actionType: st.actionType,
+        slaDays: st.slaDays,
+        allowReturn: st.allowReturn,
+        minApprovals: st.minApprovals,
+        isFinal: st.isFinal,
+        onApproveStatus: st.isFinal ? 'approved' : null,
+        onRejectStatus: 'rejected',
+      }
+
+      if (existing) {
+        await prisma.workflowStage.update({ where: { id: existing.id }, data })
+      } else {
+        await prisma.workflowStage.create({ data })
+      }
+    }
+  }
+  console.log(`  ${WORKFLOWS.length} workflows`)
+
+  for (const type of APPLICATION_TYPES) {
+    // A malformed form_schema does not fail loudly — it renders a form with a
+    // missing field, and the applicant submits something incomplete that an
+    // officer rejects weeks later. Catch it here instead.
+    const problems = validateFormSchema(type.formSchema)
+
+    if (problems.length > 0) {
+      console.error(`\nInvalid form_schema for ${type.code}:`)
+      for (const p of problems) console.error(`  ${p.path}: ${p.messageEn}`)
+      throw new Error(`form_schema validation failed for ${type.code}`)
+    }
+
+    const workflow = await prisma.workflow.findUnique({ where: { code: type.workflowCode } })
+
+    const applicationType = await prisma.applicationType.upsert({
+      where: { code: type.code },
+      update: {
+        nameMs: type.nameMs,
+        nameEn: type.nameEn,
+        category: type.category,
+        referencePrefix: type.referencePrefix,
+        formSchema: type.formSchema,
+        workflowId: workflow?.id ?? null,
+        validityMonths: type.validityMonths,
+        requiresPayment: type.requiresPayment,
+        applicantCategories: type.applicantCategories,
+      },
+      create: {
+        code: type.code,
+        nameMs: type.nameMs,
+        nameEn: type.nameEn,
+        category: type.category,
+        referencePrefix: type.referencePrefix,
+        formSchema: type.formSchema,
+        workflowId: workflow?.id ?? null,
+        validityMonths: type.validityMonths,
+        requiresPayment: type.requiresPayment,
+        applicantCategories: type.applicantCategories,
+        active: true,
+      },
+    })
+
+    for (const [i, doc] of type.documents.entries()) {
+      await prisma.applicationTypeDocument.upsert({
+        where: {
+          applicationTypeId_code: { applicationTypeId: applicationType.id, code: doc.code },
+        },
+        update: { labelMs: doc.labelMs, labelEn: doc.labelEn, required: doc.required, sortOrder: i },
+        create: {
+          applicationTypeId: applicationType.id,
+          code: doc.code,
+          labelMs: doc.labelMs,
+          labelEn: doc.labelEn,
+          required: doc.required,
+          filePolicyCode: 'PERMOHONAN_SOKONGAN',
+          sortOrder: i,
+        },
+      })
+    }
+  }
+  console.log(`  ${APPLICATION_TYPES.length} application types`)
 
   console.log('Done.')
 }
