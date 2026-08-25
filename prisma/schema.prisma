@@ -561,3 +561,342 @@ model GeneratedDocument {
   @@index([documentableType, documentableId])
   @@map("generated_documents")
 }
+
+// ══════════════════════════════════════════════════════ M1 — MODUL PERMOHONAN
+// The core of the tender. docs/04-data-model.md §6-§8.
+//
+// The shape here is what makes ADR 0002 true in practice: a new licence type is
+// an application_types row plus a form_schema plus a workflow. No new route, no
+// new model, no new migration. If code ever branches on a type code, the design
+// has been broken.
+
+/// X-R09, X-R10. This table is why a new licence type is configuration.
+model ApplicationType {
+  id   BigInt @id @default(autoincrement())
+  /// LESEN_SOKONGAN, PERMIT_AKTIVITI, SURAT_PDA2 (P1); LESEN_MALIM,
+  /// SIJIL_KECUALI_MALIM (P2)
+  code String @unique
+
+  nameMs          String @map("name_ms")
+  nameEn          String @map("name_en")
+  /// lesen | permit | surat
+  category        String
+  /// LPS, PAP, PDA2 — the {TYPE} in LPK/{TYPE}/{YEAR}/{SEQ}
+  referencePrefix String @map("reference_prefix")
+
+  /// The stepper definition: steps, fields, validation, conditional logic.
+  /// Validated against the contract in src/domain/application/form-schema.ts.
+  formSchema Json @map("form_schema")
+
+  workflowId           BigInt?   @map("workflow_id")
+  workflow             Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  documentTemplateCode String?   @map("document_template_code")
+
+  /// Fee is P1 data; collection is P2 (X-R05).
+  feeAmount           Decimal? @map("fee_amount") @db.Decimal(12, 2)
+  requiresPayment     Boolean  @default(false) @map("requires_payment")
+  /// Drives valid_until and the Expiring Soon badge (M1-R12).
+  validityMonths      Int?     @map("validity_months")
+  /// Which user categories may apply. Data, not a code branch.
+  applicantCategories Json?    @map("applicant_categories")
+
+  active        Boolean   @default(true)
+  effectiveFrom DateTime? @map("effective_from") @db.Date
+  effectiveTo   DateTime? @map("effective_to") @db.Date
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  requiredDocuments ApplicationTypeDocument[]
+  applications      Application[]
+  licences          Licence[]
+
+  @@index([category, active])
+  @@map("application_types")
+}
+
+/// M1-R04. Which supporting documents a type demands, and the upload policy
+/// each one is validated against.
+model ApplicationTypeDocument {
+  id                BigInt          @id @default(autoincrement())
+  applicationTypeId BigInt          @map("application_type_id")
+  applicationType   ApplicationType @relation(fields: [applicationTypeId], references: [id], onDelete: Cascade)
+
+  code           String
+  labelMs        String  @map("label_ms")
+  labelEn        String  @map("label_en")
+  required       Boolean @default(true)
+  /// Matches file_policies.context_code — GP-11 size and format limits.
+  filePolicyCode String? @map("file_policy_code")
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@unique([applicationTypeId, code])
+  @@map("application_type_documents")
+}
+
+model Application {
+  id          BigInt  @id @default(autoincrement())
+  uuid        String  @unique @default(uuid())
+  /// LPK/{prefix}/{year}/{seq} — M1-R05. Null while still a draft: the number
+  /// is allocated on submission, so abandoned drafts do not burn entries out of
+  /// a sequence LPKmn treats as a record.
+  referenceNo String? @unique @map("reference_no")
+
+  applicationTypeId BigInt          @map("application_type_id")
+  applicationType   ApplicationType @relation(fields: [applicationTypeId], references: [id])
+
+  applicantUserId         BigInt  @map("applicant_user_id")
+  applicantOrganisationId BigInt? @map("applicant_organisation_id")
+
+  /// draft | submitted | in_review | returned | approved | rejected |
+  /// cancelled | frozen | expired. Transitions live in the status machine,
+  /// not here — src/domain/application/states.ts.
+  status String @default("draft")
+
+  currentStageId BigInt?        @map("current_stage_id")
+  currentStage   WorkflowStage? @relation(fields: [currentStageId], references: [id], onDelete: SetNull)
+
+  /// Shaped by the type's form_schema.
+  formData          Json @default("{}") @map("form_data")
+  /// M1-R03 — where a draft resumes.
+  lastCompletedStep Int  @default(0) @map("last_completed_step")
+
+  submittedAt     DateTime? @map("submitted_at")
+  decidedAt       DateTime? @map("decided_at")
+  decision        String?
+  decisionRemarks String?   @map("decision_remarks")
+
+  validFrom  DateTime? @map("valid_from") @db.Date
+  validUntil DateTime? @map("valid_until") @db.Date
+
+  // M1-R09 / M1-R10 — cancellation by the applicant, freezing by an admin.
+  cancelledAt  DateTime? @map("cancelled_at")
+  cancelledBy  BigInt?   @map("cancelled_by")
+  cancelReason String?   @map("cancel_reason")
+  frozenAt     DateTime? @map("frozen_at")
+  frozenBy     BigInt?   @map("frozen_by")
+  freezeReason String?   @map("freeze_reason")
+
+  /// P1 stores the location; PostGIS validation against Port Limit and MRA
+  /// Area is P2 (X-R07).
+  locationDescription String?  @map("location_description")
+  locationLat         Decimal? @map("location_lat") @db.Decimal(10, 7)
+  locationLng         Decimal? @map("location_lng") @db.Decimal(10, 7)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  documents ApplicationDocument[]
+  stageLogs ApplicationStageLog[]
+  licence   Licence?
+
+  @@index([status, applicationTypeId])
+  @@index([applicantUserId])
+  @@index([submittedAt])
+  @@map("applications")
+}
+
+model ApplicationDocument {
+  id            BigInt      @id @default(autoincrement())
+  applicationId BigInt      @map("application_id")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  /// Matches application_type_documents.code.
+  requirementCode String  @map("requirement_code")
+  filePath        String  @map("file_path")
+  originalName    String  @map("original_name")
+  /// The type the BYTES proved, not the type the client claimed (GP-11).
+  mime            String
+  sizeKb          Int     @map("size_kb")
+  uploadedBy      BigInt  @map("uploaded_by")
+  /// Supersession rather than deletion (G2). A replaced document stays
+  /// readable, because a reviewer may already have decided on it.
+  replacedById    BigInt? @map("replaced_by_id")
+
+  uploadedAt DateTime  @default(now()) @map("uploaded_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([applicationId, requirementCode])
+  @@map("application_documents")
+}
+
+// ───────────────────────────────────────────────────────── workflow (M1-2)
+// The engine reads these rows. It has no knowledge of Unit M/T, PDA2 or a
+// Jawatankuasa Pemaliman — adding the Lesen Malim committee stage in Phase 2
+// is a seeder row, not a code change.
+
+model Workflow {
+  id      BigInt  @id @default(autoincrement())
+  code    String  @unique
+  nameMs  String  @map("name_ms")
+  nameEn  String  @map("name_en")
+  /// Versioned, so an in-flight application keeps the workflow it entered under.
+  version Int     @default(1)
+  active  Boolean @default(true)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  stages           WorkflowStage[]
+  applicationTypes ApplicationType[]
+
+  @@map("workflows")
+}
+
+model WorkflowStage {
+  id         BigInt   @id @default(autoincrement())
+  workflowId BigInt   @map("workflow_id")
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  sequence Int
+  code     String
+  nameMs   String @map("name_ms")
+  nameEn   String @map("name_en")
+
+  /// Who acts. The engine resolves actors from these rather than from any
+  /// hard-coded unit name.
+  actorRoleId         BigInt? @map("actor_role_id")
+  actorInternalUnitId BigInt? @map("actor_internal_unit_id")
+
+  /// review | evaluate | approve | committee | notify
+  actionType   String  @map("action_type")
+  /// GP-19 is Phase 2, but the SLA is captured from day one — without it there
+  /// is no history to report on when the KPI module arrives.
+  slaDays      Int?    @map("sla_days")
+  allowReturn  Boolean @default(true) @map("allow_return")
+  allowAmend   Boolean @default(false) @map("allow_amend")
+  /// Sijil Pengecualian Malim needs two Malim KPK evaluations (M1-R21).
+  minApprovals Int     @default(1) @map("min_approvals")
+
+  isFinal         Boolean @default(false) @map("is_final")
+  onApproveStatus String? @map("on_approve_status")
+  onRejectStatus  String? @map("on_reject_status")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  applications    Application[]
+  stageLogs       ApplicationStageLog[]
+  transitionsFrom WorkflowTransition[]  @relation("from")
+  transitionsTo   WorkflowTransition[]  @relation("to")
+
+  @@unique([workflowId, sequence])
+  @@map("workflow_stages")
+}
+
+model WorkflowTransition {
+  id          BigInt         @id @default(autoincrement())
+  fromStageId BigInt         @map("from_stage_id")
+  fromStage   WorkflowStage  @relation("from", fields: [fromStageId], references: [id], onDelete: Cascade)
+  toStageId   BigInt?        @map("to_stage_id")
+  toStage     WorkflowStage? @relation("to", fields: [toStageId], references: [id], onDelete: SetNull)
+
+  /// approve | reject | return | refer
+  action    String
+  condition Json?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([fromStageId, action])
+  @@map("workflow_transitions")
+}
+
+/// Every transition writes one of these. It is the application's history, the
+/// evidence for X-R02, and the raw material for GP-19 in Phase 2.
+model ApplicationStageLog {
+  id            BigInt      @id @default(autoincrement())
+  applicationId BigInt      @map("application_id")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  workflowStageId BigInt        @map("workflow_stage_id")
+  workflowStage   WorkflowStage @relation(fields: [workflowStageId], references: [id])
+
+  actorUserId       BigInt? @map("actor_user_id")
+  /// ADR 0003 — survives the officer being archived or renamed.
+  actorNameSnapshot String? @map("actor_name_snapshot")
+  actorRoleSnapshot String? @map("actor_role_snapshot")
+
+  action      String
+  remarks     String?
+  attachments Json?
+
+  actedAt   DateTime  @default(now()) @map("acted_at")
+  slaDueAt  DateTime? @map("sla_due_at")
+  slaMet    Boolean?  @map("sla_met")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([applicationId, actedAt])
+  @@index([workflowStageId, slaMet])
+  @@map("application_stage_logs")
+}
+
+// ─────────────────────────────────────────────── issued licences (M1-R11)
+
+model Licence {
+  id            BigInt      @id @default(autoincrement())
+  uuid          String      @unique @default(uuid())
+  applicationId BigInt      @unique @map("application_id")
+  application   Application @relation(fields: [applicationId], references: [id])
+
+  licenceNo         String          @unique @map("licence_no")
+  applicationTypeId BigInt          @map("application_type_id")
+  applicationType   ApplicationType @relation(fields: [applicationTypeId], references: [id])
+
+  holderUserId         BigInt  @map("holder_user_id")
+  holderOrganisationId BigInt? @map("holder_organisation_id")
+  /// ADR 0003 — the public verification page shows the holder as at issue.
+  holderNameSnapshot   String  @map("holder_name_snapshot")
+
+  /// active | expiring | expired | suspended | revoked
+  status String @default("active")
+
+  issuedAt   DateTime @map("issued_at")
+  validFrom  DateTime @map("valid_from") @db.Date
+  validUntil DateTime @map("valid_until") @db.Date
+
+  /// Points at generated_documents, which carries the qr_token the public
+  /// verification page resolves.
+  generatedDocumentId BigInt? @map("generated_document_id")
+
+  suspendedAt DateTime? @map("suspended_at")
+  revokedAt   DateTime? @map("revoked_at")
+  reason      String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  renewals LicenceRenewal[]
+
+  @@index([status, validUntil])
+  @@index([holderUserId])
+  @@map("licences")
+}
+
+/// P2 (M1-R19), designed now so Phase 2 does not reshape the core.
+model LicenceRenewal {
+  id                   BigInt   @id @default(autoincrement())
+  licenceId            BigInt   @map("licence_id")
+  licence              Licence  @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+  renewalApplicationId BigInt   @map("renewal_application_id")
+  previousValidUntil   DateTime @map("previous_valid_until") @db.Date
+  newValidUntil        DateTime @map("new_valid_until") @db.Date
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("licence_renewals")
+}
