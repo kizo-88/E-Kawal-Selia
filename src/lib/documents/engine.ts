@@ -8,8 +8,9 @@
  *     onto it, so a reprint years later matches what was originally issued, not
  *     the template as since edited (ADR 0003).
  *   - The qr_token is 32 random characters — never sequential, never derived
- *     from the licence number or id (X-R11 / X-R12). Generated with crypto,
- *     which is dependency-free.
+ *     from the licence number or id (X-R11 / X-R12). It is produced by the
+ *     domain generator in src/domain/licence/qr-token.ts, the single source of
+ *     truth for QR tokens (the schema comment's src/lib path is stale).
  *
  * The delivered artifact is print-ready HTML (see render.ts). Turning that HTML
  * into a binary PDF is a SEPARATE, dependency-bearing step — that lives in
@@ -19,8 +20,9 @@
  * All work runs inside the caller's `tx` (opened via withUser), so RLS applies.
  */
 
-import { randomBytes } from "crypto";
 import type { Prisma } from "@prisma/client";
+
+import { generateQrToken } from "@/domain/licence/qr-token";
 
 import { AUDIT_ACTIONS, renderAuditLabel } from "../audit/actions";
 
@@ -68,7 +70,9 @@ export async function generateDocument(
     { paperSize: tpl.paperSize, orientation: tpl.orientation, locale: "ms" },
   );
 
-  const qrToken = randomBytes(16).toString("hex");
+  // X-R11/X-R12. 32 random chars, never derived from the licence number or a
+  // sequential id. Source of truth is the domain generator.
+  const qrToken = generateQrToken();
 
   const doc = await tx.generatedDocument.create({
     data: {

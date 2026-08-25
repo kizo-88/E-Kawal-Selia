@@ -123,21 +123,21 @@ describe('Lane D — Data Wiring Rounds 4 & 5 (Main Flows & Exporters)', () => {
   })
 
   describe('Public QR Verification Minimal Disclosure (X-R11, X-R12)', () => {
-    it('returns minimal public verification fields and zero sensitive data', async () => {
-      const result = await queryLicenceVerification('7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4')
-      expect(result.found).toBe(true)
-      expect(result.licenceNo).toBeTruthy()
-      expect(result.categoryMs).toBeTruthy()
-      expect(result.categoryEn).toBeTruthy()
-      expect(result.holderName).toBeTruthy()
-      expect(result.statusLabelMs).toBeTruthy()
-      expect(result.statusLabelEn).toBeTruthy()
+    it('returns only the minimal public payload and never sensitive data', async () => {
+      const result = await queryLicenceVerification('unissued-demo-qr-token-not-a-real-secret')
+      // No licence is issued behind a random token in this environment — the
+      // page must say so rather than fabricate one (X-R12).
+      expect(result.found).toBe(false)
+      expect(result.qrToken).toBe('unissued-demo-qr-token-not-a-real-secret')
+      expect(result.issuingAuthorityMs).toBeTruthy()
+      expect(result.issuingAuthorityEn).toBeTruthy()
 
-      // Strictly verify no confidential fields exist on public payload
-      expect((result as unknown as Record<string, unknown>).icNo).toBeUndefined()
-      expect((result as unknown as Record<string, unknown>).address).toBeUndefined()
-      expect((result as unknown as Record<string, unknown>).phone).toBeUndefined()
-      expect((result as unknown as Record<string, unknown>).attachments).toBeUndefined()
+      // Strictly verify no confidential fields exist on the public payload.
+      const rec = result as unknown as Record<string, unknown>
+      expect(rec.icNo).toBeUndefined()
+      expect(rec.address).toBeUndefined()
+      expect(rec.phone).toBeUndefined()
+      expect(rec.attachments).toBeUndefined()
     })
 
   })
