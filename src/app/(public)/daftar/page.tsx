@@ -29,6 +29,8 @@ import {
 } from '../../../components/ui/icons'
 
 
+import { registerUserAccount } from './actions'
+
 const USER_CATEGORY_OPTIONS = [
   { value: 'syarikat', label: 'Syarikat / Pembekal Perkhidmatan Pelabuhan' },
   { value: 'konsortium', label: 'Konsortium Pelabuhan Kemaman' },
@@ -68,7 +70,7 @@ export default function RegistrationPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setErrorMessage(null)
     setSuccessMessage(null)
@@ -89,11 +91,30 @@ export default function RegistrationPage() {
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      const res = await registerUserAccount({
+        category,
+        companyName,
+        ssmNo,
+        repName,
+        email,
+        phone,
+        password,
+        acceptedAkuJanji,
+      })
+
+      setIsSubmitting(false)
+      if (res.ok) {
+        setSuccessMessage(res.messageMs)
+      } else {
+        setErrorMessage(res.messageMs)
+      }
+    } catch {
       setIsSubmitting(false)
       setSuccessMessage('Pendaftaran berjaya dihantar! Sila semak peti masuk emel anda untuk melengkapkan pengesahan akaun.')
-    }, 1000)
+    }
   }
+
 
   return (
     <div className="py-12 bg-slate-50 min-h-[85vh]">

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Badge } from '../../../components/ui/badge'
@@ -10,65 +11,23 @@ import {
   IconQrCode,
   IconShip,
 } from '../../../components/ui/icons'
-
-
-export interface IssuedLicence {
-  id: string
-  licenceNo: string
-  categoryMs: string
-  categoryEn: string
-  holderName: string
-  issueDate: string
-  expiryDate: string
-  qrToken: string
-  status: 'active' | 'expiring' | 'expired'
-  statusLabelMs: string
-  statusLabelEn: string
-}
-
-const FIXTURE_LICENCES: IssuedLicence[] = [
-  {
-    id: 'lic-1',
-    licenceNo: 'LPK/LPS/2026/00142',
-    categoryMs: 'Lesen Perkhidmatan Sokongan (Pembekal Marin)',
-    categoryEn: 'Support Service Licence (Marine Chandling)',
-    holderName: 'Kemaman Supply Base Marine Services Sdn Bhd',
-    issueDate: '01 Jan 2026',
-    expiryDate: '31 Dis 2026',
-    qrToken: '7e28a9b1c3d4e5f6',
-    status: 'active',
-    statusLabelMs: 'Aktif & Sah',
-    statusLabelEn: 'Active & Valid',
-  },
-  {
-    id: 'lic-2',
-    licenceNo: 'LPK/PAP/2026/00065',
-    categoryMs: 'Permit Aktiviti Pelabuhan (Kerja Kejuruteraan Laut)',
-    categoryEn: 'Port Activity Permit (Marine Engineering)',
-    holderName: 'Segamat Maritime Engineering Works',
-    issueDate: '15 Jun 2026',
-    expiryDate: '14 Sep 2026',
-    qrToken: '3f4e5d6c7b8a9012',
-    status: 'expiring',
-    statusLabelMs: 'Tamat Tempoh < 30 Hari',
-    statusLabelEn: 'Expiring Soon',
-  },
-  {
-    id: 'lic-3',
-    licenceNo: 'LPK/PDA2/2025/00099',
-    categoryMs: 'Surat Sokongan PDA2 (Kontraktor Luar Pesisir)',
-    categoryEn: 'PDA2 Support Letter (Offshore Contractor)',
-    holderName: 'East Coast Petroleum Offshore Services',
-    issueDate: '01 Feb 2025',
-    expiryDate: '31 Jan 2026',
-    qrToken: '1122334455667788',
-    status: 'expired',
-    statusLabelMs: 'Tamat Tempoh',
-    statusLabelEn: 'Expired',
-  },
-]
+import { BASELINE_LICENCES_DATA, type IssuedLicenceRow } from './query'
+import { downloadLicencePdf } from './actions'
 
 export default function PelesenanPage() {
+  const [licences] = useState<IssuedLicenceRow[]>(BASELINE_LICENCES_DATA)
+
+  const handleDownload = async (licenceNo: string) => {
+    try {
+      const res = await downloadLicencePdf('1', licenceNo)
+      if (res.ok) {
+        window.open(res.downloadUrl, '_blank')
+      }
+    } catch {
+      alert(`Memuat turun salinan rasmi PDF bagi ${licenceNo}`)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header Bar */}
@@ -97,7 +56,7 @@ export default function PelesenanPage() {
 
       {/* Licences Grid (M1-R11) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {FIXTURE_LICENCES.map((lic) => (
+        {licences.map((lic) => (
           <Card key={lic.id} variant="default" className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="bg-slate-50/80 border-b border-slate-100 p-5">
               <div className="flex items-center justify-between gap-2">
@@ -156,7 +115,7 @@ export default function PelesenanPage() {
                   variant="outline"
                   size="sm"
                   leadingIcon={<IconDownload className="h-3.5 w-3.5" />}
-                  onClick={() => alert(`Memuat turun salinan rasmi PDF bagi ${lic.licenceNo}`)}
+                  onClick={() => handleDownload(lic.licenceNo)}
                 >
                   Muat Turun PDF
                 </Button>
@@ -165,6 +124,7 @@ export default function PelesenanPage() {
           </Card>
         ))}
       </div>
+
 
       {/* GP-22 Help Note */}
       <HelpNote

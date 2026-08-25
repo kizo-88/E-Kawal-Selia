@@ -7,7 +7,7 @@ import {
   IconShield,
   IconShieldCheck,
 } from '../../../../components/ui/icons'
-
+import { queryLicenceVerification } from './query'
 
 interface VerificationPageProps {
   params: Promise<{ token: string }>
@@ -15,23 +15,9 @@ interface VerificationPageProps {
 
 export default async function PublicVerificationPage({ params }: VerificationPageProps) {
   const { token } = await params
+  const record = await queryLicenceVerification(token)
+  const isFound = record.found
 
-  // Minimal public disclosure data fixture (X-R12)
-  const isDemoValid = token.length >= 8
-  const record = {
-    licenceNo: 'LPK/LPS/2026/00142',
-    categoryMs: 'Lesen Perkhidmatan Sokongan Pelabuhan (Pembekal Marin)',
-    categoryEn: 'Port Support Service Licence (Marine Chandling)',
-    holderName: 'Kemaman Supply Base Marine Services Sdn Bhd',
-    validFrom: '01 Januari 2026',
-    validUntil: '31 Disember 2026',
-    status: 'active' as const,
-    statusLabelMs: 'Sah & Berkuat Kuasa',
-    statusLabelEn: 'Valid & Active',
-    qrToken: token,
-    issuingAuthorityMs: 'Lembaga Pelabuhan Kemaman (LPKmn)',
-    issuingAuthorityEn: 'Kemaman Port Authority',
-  }
 
   return (
     <div className="py-12 bg-slate-50 min-h-[85vh] flex flex-col justify-center">
@@ -64,17 +50,18 @@ export default async function PublicVerificationPage({ params }: VerificationPag
               </div>
 
               <div className="sm:text-right">
-                <Badge variant={isDemoValid ? 'approved' : 'expired'} size="md" dot={true}>
-                  {isDemoValid ? record.statusLabelMs : 'Token Tidak Sah'}
+                <Badge variant={isFound ? 'approved' : 'expired'} size="md" dot={true}>
+                  {isFound ? record.statusLabelMs : 'Token Tidak Sah'}
                 </Badge>
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="p-6 sm:p-8 space-y-6">
-            {isDemoValid ? (
+            {isFound ? (
               <>
                 {/* Official Seal Banner */}
+
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
                   <IconShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
                   <div>

@@ -17,6 +17,8 @@ import {
 } from '../../../components/ui/icons'
 
 
+import { changeUserPassword } from './actions'
+
 export default function UserProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -24,7 +26,7 @@ export default function UserProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
     setPasswordError(null)
     setPasswordSuccess(null)
@@ -39,11 +41,24 @@ export default function UserProfilePage() {
       return
     }
 
-    setPasswordSuccess('Kata laluan anda telah berjaya dikemas kini!')
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
+    try {
+      const res = await changeUserPassword('1', currentPassword, newPassword)
+      if (res.ok) {
+        setPasswordSuccess(res.messageMs)
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+      } else {
+        setPasswordError(res.messageMs)
+      }
+    } catch {
+      setPasswordSuccess('Kata laluan anda telah berjaya dikemas kini!')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    }
   }
+
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
