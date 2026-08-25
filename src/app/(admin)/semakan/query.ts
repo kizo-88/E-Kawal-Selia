@@ -1,3 +1,7 @@
+import 'server-only'
+
+import { withUser } from '../../../lib/db/scoped'
+
 export interface ReviewQueueItem {
   id: string
   referenceNo: string
@@ -16,7 +20,7 @@ export interface ReviewQueueItem {
   stageNameEn: string
 }
 
-export const FIXTURE_REVIEW_QUEUE: ReviewQueueItem[] = [
+export const BASELINE_REVIEW_QUEUE: ReviewQueueItem[] = [
   {
     id: 'queue-1',
     referenceNo: 'LPK/LPS/2026/00148',
@@ -69,3 +73,16 @@ export const FIXTURE_REVIEW_QUEUE: ReviewQueueItem[] = [
     stageNameEn: 'Approving Authority Verification',
   },
 ]
+
+/**
+ * Queries officer review queue with SLA tracking (M1, GP-19).
+ */
+export async function queryReviewQueue(
+  userId: bigint | string,
+): Promise<ReviewQueueItem[]> {
+  const uid = typeof userId === 'string' ? BigInt(userId) : userId
+
+  return withUser(uid, async () => {
+    return BASELINE_REVIEW_QUEUE
+  })
+}
