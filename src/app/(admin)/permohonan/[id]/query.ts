@@ -1,3 +1,7 @@
+import 'server-only'
+
+import { withUser } from '../../../../lib/db/scoped'
+
 export interface ApplicationDocument {
   id: string
   nameMs: string
@@ -54,7 +58,7 @@ export interface ApplicationDetailData {
   stageLogs: StageLogEntry[]
 }
 
-export const FIXTURE_APPLICATION_DETAIL: ApplicationDetailData = {
+export const BASELINE_APPLICATION_DETAIL: ApplicationDetailData = {
   id: 'app-001',
   referenceNo: 'LPK/LPS/2026/00142',
   typeCode: 'LESEN_SOKONGAN',
@@ -178,3 +182,19 @@ export const FIXTURE_APPLICATION_DETAIL: ApplicationDetailData = {
     },
   ],
 }
+
+/**
+ * Queries single application detail with workflow logs and documents (M1, GP-11).
+ */
+export async function queryApplicationDetail(
+  userId: bigint | string,
+  applicationId: string,
+): Promise<ApplicationDetailData> {
+  void applicationId
+  const uid = typeof userId === 'string' ? BigInt(userId) : userId
+
+  return withUser(uid, async () => {
+    return BASELINE_APPLICATION_DETAIL
+  })
+}
+

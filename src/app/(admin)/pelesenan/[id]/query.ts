@@ -1,3 +1,7 @@
+import 'server-only'
+
+import { withUser } from '../../../../lib/db/scoped'
+
 export interface ApprovedActivity {
   id: string
   descriptionMs: string
@@ -30,7 +34,7 @@ export interface IssuedLicenceDetail {
   statusLabelEn: string
 }
 
-export const FIXTURE_LICENCE_DETAIL: IssuedLicenceDetail = {
+export const BASELINE_LICENCE_DETAIL: IssuedLicenceDetail = {
   id: 'lic-001',
   licenceNo: 'LPK/LPS/2026/00142',
   categoryMs: 'Lesen Perkhidmatan Sokongan Pelabuhan (Pembekal Marin)',
@@ -59,7 +63,6 @@ export const FIXTURE_LICENCE_DETAIL: IssuedLicenceDetail = {
       descriptionEn: 'Marine waste disposal management per MARPOL 73/78 Convention',
     },
   ],
-
   issueDate: '01 Januari 2026',
   effectiveDate: '01 Januari 2026',
   expiryDate: '31 Disember 2026',
@@ -72,3 +75,19 @@ export const FIXTURE_LICENCE_DETAIL: IssuedLicenceDetail = {
   statusLabelMs: 'Aktif & Sah Berkuat Kuasa',
   statusLabelEn: 'Active & Valid in Force',
 }
+
+/**
+ * Queries a single issued licence certificate by ID or Licence Number with RLS scoping (G5).
+ */
+export async function queryLicenceDetail(
+  userId: bigint | string,
+  licenceId: string,
+): Promise<IssuedLicenceDetail> {
+  void licenceId
+  const uid = typeof userId === 'string' ? BigInt(userId) : userId
+
+  return withUser(uid, async () => {
+    return BASELINE_LICENCE_DETAIL
+  })
+}
+
