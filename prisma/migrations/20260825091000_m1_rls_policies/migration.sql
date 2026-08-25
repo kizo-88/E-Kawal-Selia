@@ -42,29 +42,22 @@ CREATE OR REPLACE FUNCTION app.can_act_on_stage(stage_id BIGINT) RETURNS BOOLEAN
   );
 $$ LANGUAGE sql STABLE;
 
--- Whether the current user may see a given application at all.
--- Three ways in, and no fourth:
---   the applicant who filed it
---   a colleague at the same organisation (a company's other representatives
---     must be able to continue a submission when someone is on leave)
---   an officer whose role or unit acts at the stage the application is on
+-- Whether the current user may see a given application.
+--
+-- This deliberately does NOT restate the visibility rule. The rule lives in the
+-- applications_read policy below, and this function simply asks whether the row
+-- is visible — the policy filters the SELECT, so EXISTS answers the question by
+-- construction. A document is visible exactly when its application is.
+--
+-- The first version of this function DID restate the rule, by selecting from
+-- applications with the full predicate. That recursed: the SELECT triggered the
+-- applications_read policy, which called this function, which selected from
+-- applications again. Postgres terminated it with "stack depth limit exceeded"
+-- and SELECT on the core table of the system failed outright for every user.
+--
+-- The rule: a policy on table X must never call a function that queries X.
 CREATE OR REPLACE FUNCTION app.can_view_application(app_id BIGINT) RETURNS BOOLEAN AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM applications a
-    WHERE a.id = app_id
-      AND (
-        a.applicant_user_id = app.current_user_id()
-        OR (a.applicant_organisation_id IS NOT NULL AND EXISTS (
-          SELECT 1 FROM organisation_user ou
-          WHERE ou.organisation_id = a.applicant_organisation_id
-            AND ou.user_id = app.current_user_id()
-            AND ou.deleted_at IS NULL
-        ))
-        OR app.has_permission('permohonan.application.view_all')
-        OR (a.current_stage_id IS NOT NULL AND app.can_act_on_stage(a.current_stage_id))
-      )
-  );
+  SELECT EXISTS (SELECT 1 FROM applications a WHERE a.id = app_id);
 $$ LANGUAGE sql STABLE;
 
 -- ============================================================================
@@ -105,8 +98,28 @@ END $$;
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applications FORCE ROW LEVEL SECURITY;
 
+-- The visibility rule itself, stated once, using the row's own columns.
+-- Three ways in, and no fourth:
+--   the applicant who filed it
+--   a colleague at the same organisation — a company's other representatives
+--     must be able to continue a submission when someone is on leave
+--   an officer whose role or unit acts at the stage the application is on
+--
+-- Written inline rather than via a helper because a helper would have to query
+-- `applications` to reach these columns, and that recurses through this very
+-- policy. See the note on app.can_view_application above.
 CREATE POLICY applications_read ON applications FOR SELECT
-  USING (app.can_view_application(id));
+  USING (
+    applicant_user_id = app.current_user_id()
+    OR (applicant_organisation_id IS NOT NULL AND EXISTS (
+      SELECT 1 FROM organisation_user ou
+      WHERE ou.organisation_id = applications.applicant_organisation_id
+        AND ou.user_id = app.current_user_id()
+        AND ou.deleted_at IS NULL
+    ))
+    OR app.has_permission('permohonan.application.view_all')
+    OR (current_stage_id IS NOT NULL AND app.can_act_on_stage(current_stage_id))
+  );
 
 -- An applicant creates only their own applications. Without the WITH CHECK, a
 -- crafted request could file an application in someone else's name.
