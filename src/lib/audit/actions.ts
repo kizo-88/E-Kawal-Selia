@@ -131,6 +131,11 @@ export const AUDIT_ACTIONS = define({
     templateMs: 'Dokumen rujukan {reference} disemak melalui kod QR',
     templateEn: 'Document reference {reference} was verified via QR code',
   },
+  LESEN_DIKELUARKAN: {
+    moduleCode: 'lesen',
+    templateMs: 'Lesen {subject} dikeluarkan oleh {actor}',
+    templateEn: 'Licence {subject} issued by {actor}',
+  },
 
   // ── Notifications ───────────────────────────────────────────────────────
   PEMBERITAHUAN_DIHANTAR: {
