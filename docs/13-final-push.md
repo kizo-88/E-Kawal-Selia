@@ -194,5 +194,10 @@ Both came from real failures this week. They belong in `docs/10-parallel-workstr
    that fetches and a page that is interactive, and nothing stated it. It broke the build with
    `Can't resolve 'dns'`, seven layers from the cause.
 
-2. **`npm run build` before declaring done.** `npm run verify` does not build. Two separate red-main
+2. **After merging a lane that touched `package.json` or `prisma/schema.prisma`, run `npm install`
+   and `npx prisma generate` before verifying.** Round 6 looked red on main for two minutes purely
+   because the merge directory had stale `node_modules` and an ungenerated client. The commit was
+   fine; the checkout was not. Cost ten minutes of chasing a phantom.
+
+3. **`npm run build` before declaring done.** `npm run verify` does not build. Two separate red-main
    incidents this week were both a passing verify with a failing build.
