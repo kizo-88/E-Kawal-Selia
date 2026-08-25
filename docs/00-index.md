@@ -20,6 +20,7 @@ Sebut Harga **LPKmn Bil. 02/2026**.
 | 09 | [Local Setup](09-setup.md) | First day on the project, or when your environment breaks |
 | 10 | [Parallel Workstreams](10-parallel-workstreams.md) | Running Claude Code, Gemini and OpenCode at once — ownership map and per-agent prompts |
 | 11 | [Completion Plan](11-completion-plan.md) | **What is actually done, what remains, and Rounds 3-5 to finish Phase 1** |
+| 13 | [Final Push](13-final-push.md) | **Audited state, the ~96 PD remaining, and Rounds 6-7** |
 | 12 | [Agent Brief, Rounds 3-5](12-rounds-3-5-agent-brief.md) | **Self-contained. Paste into any AI tool — five lanes, full prompts, no repo reading required** |
 
 Plus **[RULES.md](../RULES.md)** — the highest-authority document in the repo, seven of whose
