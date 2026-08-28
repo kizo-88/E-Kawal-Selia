@@ -103,12 +103,18 @@ export function LicenceCertificateView({ initialLicence }: LicenceCertificateVie
 
           {/* Certificate Header */}
           <div className="text-center space-y-2 border-b-2 border-[#0b2545] pb-6">
-            <div className="inline-flex p-3 rounded-2xl bg-[#0b2545] text-amber-400 mb-2">
-              <IconAnchor className="h-10 w-10" />
+            <div className="inline-flex p-2 rounded-2xl bg-white shadow-xs border border-slate-200 mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo-lpkmn.png"
+                alt="Logo Rasmi Lembaga Pelabuhan Kemaman"
+                className="h-16 w-16 object-contain"
+              />
             </div>
             <h2 className="text-xs font-bold tracking-widest uppercase text-slate-500">
               Lembaga Pelabuhan Kemaman (LPKmn)
             </h2>
+
             <h1 className="text-xl sm:text-2xl font-extrabold text-[#0b2545] tracking-tight uppercase">
               Sijil Perakuan Lesen Perkhidmatan Sokongan
             </h1>

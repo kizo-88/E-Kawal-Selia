@@ -12,12 +12,12 @@ import {
   AlertDescription,
 } from '../ui'
 import {
-  IconAnchor,
   IconLock,
   IconMail,
   IconShieldCheck,
   IconUser,
 } from '../ui/icons'
+
 
 
 export interface LoginCardProps {
@@ -131,14 +131,20 @@ export function LoginCard({ redirectUrl = '/dashboard', className = '' }: LoginC
     >
       {/* Header Accent Bar */}
       <div className="bg-gradient-to-r from-[#0b2545] via-[#133e87] to-[#0b2545] p-6 text-white text-center relative">
-        <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 text-amber-400 mb-3">
-          <IconAnchor className="h-6 w-6" />
+        <div className="inline-flex items-center justify-center h-14 w-14 rounded-xl bg-white p-1 shadow-md border border-white/40 mb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-lpkmn.png"
+            alt="Logo Rasmi Lembaga Pelabuhan Kemaman"
+            className="h-full w-full object-contain"
+          />
         </div>
         <h3 className="text-xl font-bold tracking-tight">Log Masuk Portal</h3>
         <p className="mt-1 text-xs text-slate-200">
           Sistem Pengurusan Pelesenan, Permit &amp; Kawalselia (e-Kawalselia)
         </p>
       </div>
+
 
       {/* Form Body */}
       <div className="p-6 sm:p-8 space-y-5">

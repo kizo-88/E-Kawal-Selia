@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { IconAnchor, IconLock, IconShieldCheck, IconUser } from '../ui/icons'
+import { IconLock, IconShieldCheck, IconUser } from '../ui/icons'
+
 
 
 export function PublicHeader() {
@@ -35,9 +36,15 @@ export function PublicHeader() {
           className="flex items-center gap-3.5 group focus-visible:outline-2 focus-visible:outline-[#0b2545] rounded-lg p-1"
         >
           {/* LPKmn Logo Emblem */}
-          <div className="h-11 w-11 rounded-lg bg-gradient-to-br from-[#0b2545] to-[#133e87] flex items-center justify-center text-amber-400 shadow-sm border border-amber-400/30 group-hover:scale-105 transition-transform shrink-0">
-            <IconAnchor className="h-6 w-6" />
+          <div className="h-12 w-12 rounded-lg bg-white p-1 flex items-center justify-center shadow-xs border border-slate-200 group-hover:scale-105 transition-transform shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo-lpkmn.png"
+              alt="Logo Rasmi Lembaga Pelabuhan Kemaman"
+              className="h-full w-full object-contain"
+            />
           </div>
+
 
           <div className="flex flex-col">
             <div className="flex items-baseline gap-2">
