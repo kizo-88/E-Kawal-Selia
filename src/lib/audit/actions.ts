@@ -136,6 +136,26 @@ export const AUDIT_ACTIONS = define({
     templateMs: 'Lesen {subject} dikeluarkan oleh {actor}',
     templateEn: 'Licence {subject} issued by {actor}',
   },
+  PERMOHONAN_DIAJUKAN: {
+    moduleCode: 'permohonan',
+    templateMs: 'Permohonan {subject} dijukan oleh {actor}',
+    templateEn: 'Application {subject} submitted by {actor}',
+  },
+  PERMOHONAN_DILULUSKAN: {
+    moduleCode: 'permohonan',
+    templateMs: 'Permohonan {subject} diluluskan oleh {actor}',
+    templateEn: 'Application {subject} approved by {actor}',
+  },
+  PERMOHONAN_DITOLAK: {
+    moduleCode: 'permohonan',
+    templateMs: 'Permohonan {subject} ditolak oleh {actor}',
+    templateEn: 'Application {subject} rejected by {actor}',
+  },
+  PERMOHONAN_DIKEMBALIKAN: {
+    moduleCode: 'permohonan',
+    templateMs: 'Permohonan {subject} dikembalikan kepada pemohon oleh {actor}',
+    templateEn: 'Application {subject} returned to applicant by {actor}',
+  },
 
   // ── Notifications ───────────────────────────────────────────────────────
   PEMBERITAHUAN_DIHANTAR: {

@@ -1,11 +1,36 @@
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/db', () => ({ prisma: {} }))
+const MOCK_APP_TYPE = {
+  id: 1n,
+  code: 'LESEN_SOKONGAN',
+  nameMs: 'Lesen Perkhidmatan Sokongan',
+  nameEn: 'Supporting Service Licence',
+  referencePrefix: 'LPS',
+  workflowId: 1n,
+  validityMonths: 12,
+  documentTemplateCode: 'LESEN',
+  formSchema: { version: 1, steps: [{ sequence: 1, code: 'info', titleMs: 'Info', titleEn: 'Info', fields: [
+    { name: 'portLocation', labelMs: 'Lokasi', labelEn: 'Location', kind: 'text', required: true },
+    { name: 'scopeDescription', labelMs: 'Skop', labelEn: 'Scope', kind: 'textarea', required: true },
+  ]}] },
+}
+
 vi.mock('@/lib/db/scoped', () => ({
   withUser: vi.fn((_userId, callback) => callback({
-    auditLog: { count: vi.fn().mockResolvedValue(10) },
-    user: { findUnique: vi.fn().mockResolvedValue(null) },
-    generatedDocument: { findUnique: vi.fn().mockResolvedValue(null) },
+    auditLog: { count: vi.fn().mockResolvedValue(10), create: vi.fn().mockResolvedValue({ id: 1n }) },
+    user: { findUnique: vi.fn().mockResolvedValue({ id: 1n, name: 'Test User', email: 'test@example.com', phone: '+60123456789', status: 'active', organisations: [], undertakings: [{ undertakingVersionSnapshot: 'Versi 2026.1', acceptedAt: new Date('2026-01-12T10:14:00Z') }] }) },
+    generatedDocument: { findUnique: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue({ id: 1n, qrToken: 'TESTTOKEN00000000000000000000000000' }) },
+    applicationType: { findUnique: vi.fn().mockResolvedValue(MOCK_APP_TYPE) },
+    application: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      findUnique: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({ id: 1n, referenceNo: 'LPK/LPS/2026/00001' }),
+      update: vi.fn().mockResolvedValue({ id: 1n }),
+    },
+    workflowStage: { findFirst: vi.fn().mockResolvedValue({ id: 1n, workflowId: 1n, sequence: 1 }), findUnique: vi.fn().mockResolvedValue({ id: 1n, workflowId: 1n, sequence: 1 }) },
+    licence: { create: vi.fn().mockResolvedValue({ id: 1n, licenceNo: 'L/LPK/LPS/2026/00001' }), update: vi.fn().mockResolvedValue({ id: 1n }) },
+    $queryRawUnsafe: vi.fn().mockResolvedValue([{ reference_no: 'LPK/LPS/2026/00001' }]),
   })),
   asAnonymous: vi.fn((callback) => callback({
     generatedDocument: { findUnique: vi.fn().mockResolvedValue(null) },
@@ -13,9 +38,19 @@ vi.mock('@/lib/db/scoped', () => ({
 }))
 vi.mock('../src/lib/db/scoped', () => ({
   withUser: vi.fn((_userId, callback) => callback({
-    auditLog: { count: vi.fn().mockResolvedValue(10) },
-    user: { findUnique: vi.fn().mockResolvedValue(null) },
-    generatedDocument: { findUnique: vi.fn().mockResolvedValue(null) },
+    auditLog: { count: vi.fn().mockResolvedValue(10), create: vi.fn().mockResolvedValue({ id: 1n }) },
+    user: { findUnique: vi.fn().mockResolvedValue({ id: 1n, name: 'Test User', email: 'test@example.com', phone: '+60123456789', status: 'active', organisations: [], undertakings: [{ undertakingVersionSnapshot: 'Versi 2026.1', acceptedAt: new Date('2026-01-12T10:14:00Z') }] }) },
+    generatedDocument: { findUnique: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue({ id: 1n, qrToken: 'TESTTOKEN00000000000000000000000000' }) },
+    applicationType: { findUnique: vi.fn().mockResolvedValue(MOCK_APP_TYPE) },
+    application: {
+      findFirst: vi.fn().mockResolvedValue(null),
+      findUnique: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({ id: 1n, referenceNo: 'LPK/LPS/2026/00001' }),
+      update: vi.fn().mockResolvedValue({ id: 1n }),
+    },
+    workflowStage: { findFirst: vi.fn().mockResolvedValue({ id: 1n, workflowId: 1n, sequence: 1 }), findUnique: vi.fn().mockResolvedValue({ id: 1n, workflowId: 1n, sequence: 1 }) },
+    licence: { create: vi.fn().mockResolvedValue({ id: 1n, licenceNo: 'L/LPK/LPS/2026/00001' }), update: vi.fn().mockResolvedValue({ id: 1n }) },
+    $queryRawUnsafe: vi.fn().mockResolvedValue([{ reference_no: 'LPK/LPS/2026/00001' }]),
   })),
   asAnonymous: vi.fn((callback) => callback({
     generatedDocument: { findUnique: vi.fn().mockResolvedValue(null) },
