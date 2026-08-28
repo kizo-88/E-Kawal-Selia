@@ -9,3 +9,5 @@ export * from './badge'
 export * from './alert'
 export * from './table'
 export * from './help-note'
+export * from './qr-code-view'
+

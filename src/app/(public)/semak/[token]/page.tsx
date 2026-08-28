@@ -1,11 +1,10 @@
 import Link from 'next/link'
-import { Badge } from '../../../../components/ui/badge'
-import { Card, CardContent, CardHeader } from '../../../../components/ui/card'
+import { Badge, Card, CardContent, CardHeader, QRCodeView } from '../../../../components/ui'
 import {
-  IconQrCode,
   IconShield,
   IconShieldCheck,
 } from '../../../../components/ui/icons'
+
 import { queryLicenceVerification } from './query'
 
 interface VerificationPageProps {
@@ -123,13 +122,21 @@ export default async function PublicVerificationPage({ params }: VerificationPag
                 </div>
 
                 {/* Token Signature Footprint */}
-                <div className="p-3 bg-slate-100 rounded-lg text-[11px] text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 font-mono">
-                    <IconQrCode className="h-4 w-4 text-slate-400" />
-                    <span>Token Keselamatan: {record.qrToken}</span>
+                <div className="p-4 bg-slate-100 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-200">
+                  <div className="flex items-center gap-3">
+                    <QRCodeView
+                      value={`http://localhost:3001/semak/${record.qrToken}`}
+                      size={64}
+                      alt={`Kod QR Semakan ${record.licenceNo}`}
+                    />
+                    <div className="space-y-0.5 font-mono text-[11px]">
+                      <span className="font-bold text-slate-900 block">Token Keselamatan Disahkan:</span>
+                      <span className="text-slate-600 block break-all">{record.qrToken}</span>
+                    </div>
                   </div>
-                  <span className="italic">Piawaian Keselamatan Maritim X-R11 / X-R12</span>
+                  <span className="italic text-[11px] text-slate-500 shrink-0">Piawaian Keselamatan Maritim X-R11 / X-R12</span>
                 </div>
+
               </>
             ) : (
               <div className="py-8 text-center space-y-4">

@@ -7,13 +7,14 @@ import {
   Button,
   Card,
   HelpNote,
+  QRCodeView,
 } from '../ui'
 import {
   IconAnchor,
   IconDownload,
-  IconQrCode,
   IconShieldCheck,
 } from '../ui/icons'
+
 
 export interface ApprovedActivity {
   id: string
@@ -222,13 +223,17 @@ export function LicenceCertificateView({ initialLicence }: LicenceCertificateVie
           <div className="pt-6 border-t-2 border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
             {/* QR Code Verification Widget */}
             <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <div className="p-2 rounded-lg bg-white border border-slate-300 shrink-0">
-                <IconQrCode className="h-14 w-14 text-slate-900" />
+              <div className="shrink-0">
+                <QRCodeView
+                  value={`http://localhost:3001/semak/${licence.qrToken}`}
+                  size={96}
+                  alt={`Kod QR Pengesahan Rasmi Lesen ${licence.licenceNo}`}
+                />
               </div>
               <div className="space-y-1 text-[11px]">
                 <span className="font-bold text-slate-900 block">Pengesahan Kod Keselamatan QR</span>
                 <p className="text-slate-500 text-[10px]">
-                  Imbas untuk semakan ketulenan tanpa log masuk (X-R11 / X-R12).
+                  Imbas menggunakan telefon pintar untuk semakan ketulenan tanpa log masuk (X-R11 / X-R12).
                 </p>
                 <Link
                   href={`/semak/${licence.qrToken}`}
@@ -239,6 +244,7 @@ export function LicenceCertificateView({ initialLicence }: LicenceCertificateVie
                 </Link>
               </div>
             </div>
+
 
             {/* Approving Authority Signature Block */}
             <div className="text-center sm:text-right space-y-1 text-xs">
