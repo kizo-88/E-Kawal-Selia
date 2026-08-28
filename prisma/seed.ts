@@ -10,6 +10,11 @@
  * details, on any machine.
  */
 
+// tsx does not load .env on its own, and this file is run directly as often
+// as it is run through `prisma db seed`. Without this, seeding fails with a
+// confusing 'DIRECT_URL must be set' even when .env has it.
+import 'dotenv/config'
+
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
@@ -30,25 +35,25 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) })
 // ─────────────────────────────────────────────────────────────── settings
 const SETTINGS = [
   // GP-07 system identity
-  { key: 'system.name', value: 'e-Kawalselia', group: 'system', labelMs: 'Nama Sistem', labelEn: 'System Name' },
-  { key: 'system.acronym', value: 'eKS', group: 'system', labelMs: 'Singkatan Sistem', labelEn: 'System Acronym' },
-  { key: 'system.logo_path', value: '', type: 'file', group: 'system', labelMs: 'Logo Sistem', labelEn: 'System Logo' },
-  { key: 'system.banner_enabled', value: 'true', type: 'bool', group: 'system', labelMs: 'Papar Banner', labelEn: 'Show Banner' },
-  { key: 'system.go_live_year', value: '2026', type: 'int', group: 'system', labelMs: 'Tahun Go-Live', labelEn: 'Go-Live Year' },
+  { key: 'system.name', isPublic: true, value: 'e-Kawalselia', group: 'system', labelMs: 'Nama Sistem', labelEn: 'System Name' },
+  { key: 'system.acronym', isPublic: true, value: 'eKS', group: 'system', labelMs: 'Singkatan Sistem', labelEn: 'System Acronym' },
+  { key: 'system.logo_path', isPublic: true, value: '', type: 'file', group: 'system', labelMs: 'Logo Sistem', labelEn: 'System Logo' },
+  { key: 'system.banner_enabled', isPublic: true, value: 'true', type: 'bool', group: 'system', labelMs: 'Papar Banner', labelEn: 'Show Banner' },
+  { key: 'system.go_live_year', isPublic: true, value: '2026', type: 'int', group: 'system', labelMs: 'Tahun Go-Live', labelEn: 'Go-Live Year' },
 
   // GP-08 organisation identity, address as separate fields
-  { key: 'organisation.name', value: 'Lembaga Pelabuhan Kemaman', group: 'organisation', labelMs: 'Nama Organisasi', labelEn: 'Organisation Name' },
-  { key: 'organisation.secretariat', value: 'Unit IT, Bahagian Korporat & Pembangunan', group: 'organisation', labelMs: 'Urusetia', labelEn: 'Secretariat' },
-  { key: 'organisation.address_line1', value: 'Telok Kalong', group: 'organisation', labelMs: 'Alamat 1', labelEn: 'Address Line 1' },
-  { key: 'organisation.address_line2', value: 'Peti Surat 66', group: 'organisation', labelMs: 'Alamat 2', labelEn: 'Address Line 2' },
-  { key: 'organisation.postcode', value: '24000', group: 'organisation', labelMs: 'Poskod', labelEn: 'Postcode' },
-  { key: 'organisation.city', value: 'Kemaman', group: 'organisation', labelMs: 'Bandar', labelEn: 'City' },
-  { key: 'organisation.state', value: 'Terengganu', group: 'organisation', labelMs: 'Negeri', labelEn: 'State' },
+  { key: 'organisation.name', isPublic: true, value: 'Lembaga Pelabuhan Kemaman', group: 'organisation', labelMs: 'Nama Organisasi', labelEn: 'Organisation Name' },
+  { key: 'organisation.secretariat', isPublic: true, value: 'Unit IT, Bahagian Korporat & Pembangunan', group: 'organisation', labelMs: 'Urusetia', labelEn: 'Secretariat' },
+  { key: 'organisation.address_line1', isPublic: true, value: 'Telok Kalong', group: 'organisation', labelMs: 'Alamat 1', labelEn: 'Address Line 1' },
+  { key: 'organisation.address_line2', isPublic: true, value: 'Peti Surat 66', group: 'organisation', labelMs: 'Alamat 2', labelEn: 'Address Line 2' },
+  { key: 'organisation.postcode', isPublic: true, value: '24000', group: 'organisation', labelMs: 'Poskod', labelEn: 'Postcode' },
+  { key: 'organisation.city', isPublic: true, value: 'Kemaman', group: 'organisation', labelMs: 'Bandar', labelEn: 'City' },
+  { key: 'organisation.state', isPublic: true, value: 'Terengganu', group: 'organisation', labelMs: 'Negeri', labelEn: 'State' },
 
   // GP-07 formats
-  { key: 'format.date', value: 'd/m/Y', group: 'format', labelMs: 'Format Tarikh', labelEn: 'Date Format' },
-  { key: 'format.currency', value: 'RM', group: 'format', labelMs: 'Mata Wang', labelEn: 'Currency' },
-  { key: 'format.default_locale', value: 'ms', group: 'format', labelMs: 'Bahasa Lalai', labelEn: 'Default Locale' },
+  { key: 'format.date', isPublic: true, value: 'd/m/Y', group: 'format', labelMs: 'Format Tarikh', labelEn: 'Date Format' },
+  { key: 'format.currency', isPublic: true, value: 'RM', group: 'format', labelMs: 'Mata Wang', labelEn: 'Currency' },
+  { key: 'format.default_locale', isPublic: true, value: 'ms', group: 'format', labelMs: 'Bahasa Lalai', labelEn: 'Default Locale' },
 
   // GP-03. These must be editable by an admin — a correct value hard-coded in
   // application code still fails the requirement.
@@ -395,8 +400,8 @@ async function main() {
   for (const s of SETTINGS) {
     await prisma.setting.upsert({
       where: { key: s.key },
-      update: { labelMs: s.labelMs, labelEn: s.labelEn, group: s.group, type: s.type ?? 'string' },
-      create: { ...s, type: s.type ?? 'string' },
+      update: { labelMs: s.labelMs, labelEn: s.labelEn, group: s.group, type: s.type ?? 'string', isPublic: s.isPublic ?? false },
+      create: { ...s, type: s.type ?? 'string', isPublic: s.isPublic ?? false },
     })
   }
   console.log(`  ${SETTINGS.length} settings`)
