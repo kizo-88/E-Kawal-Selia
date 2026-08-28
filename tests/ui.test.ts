@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { LPKMN_ORG_INFO } from '../src/components/layout/public-footer'
 import { FIXTURE_ANNOUNCEMENTS, FIXTURE_FAQS } from '../src/components/layout/announcements-panel'
-import { SERVICES_LIST, HELP_TIPS } from '../src/app/(public)/page'
+import { SERVICES_LIST, HELP_TIPS } from '../src/components/public/home-constants'
+
 
 describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
   describe('Organisation & Footer Config (GP-08, GP-23)', () => {

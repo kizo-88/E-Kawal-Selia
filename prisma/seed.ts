@@ -14,6 +14,8 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
 import { validateFormSchema } from '../src/domain/application/form-schema'
+import { hashPassword } from '../src/lib/auth/hash'
+
 
 // Prisma 7 requires a driver adapter — a bare `new PrismaClient()` throws at
 // construction. The seeder uses DIRECT_URL rather than DATABASE_URL because
@@ -578,8 +580,116 @@ async function main() {
   }
   console.log(`  ${APPLICATION_TYPES.length} application types`)
 
+  // ── Seed Dummy Accounts (Admin, Reviewer, User)
+  const DUMMY_USERS = [
+    {
+      name: 'Pentadbir Sistem LPKmn',
+      email: 'admin@lpkmn.gov.my',
+      plainPassword: 'Admin@LPKmn2026!',
+      userCategory: 'internal',
+      roleCode: 'SUPER_ADMIN',
+      unitCode: 'IT',
+      phone: '+609-863 1000',
+    },
+    {
+      name: 'Kapt. Mohd Roslan (Pegawai Penilai)',
+      email: 'reviewer@lpkmn.gov.my',
+      plainPassword: 'Officer@LPKmn2026!',
+      userCategory: 'internal',
+      roleCode: 'REVIEWER',
+      unitCode: 'MT',
+      phone: '+609-863 1022',
+    },
+    {
+      name: 'En. Ahmad Zulkifli (Kemaman Supply Base)',
+      email: 'user@kemamansupply.com.my',
+      plainPassword: 'User@Kemaman2026!',
+      userCategory: 'external',
+      roleCode: 'END_USER',
+      companyName: 'Kemaman Supply Base Marine Services Sdn Bhd',
+      ssmNo: '202401012345 (123456-X)',
+      phone: '+609-863 1590',
+    },
+  ]
+
+  for (const acc of DUMMY_USERS) {
+    const passwordHash = await hashPassword(acc.plainPassword)
+    const role = await prisma.role.findUnique({ where: { code: acc.roleCode } })
+
+    const user = await prisma.user.upsert({
+      where: { email: acc.email },
+      update: {
+        name: acc.name,
+        passwordHash,
+        userCategory: acc.userCategory,
+        status: 'active',
+        mustChangePassword: false,
+        phone: acc.phone,
+        emailVerifiedAt: new Date(),
+      },
+      create: {
+        name: acc.name,
+        email: acc.email,
+        passwordHash,
+        userCategory: acc.userCategory,
+        status: 'active',
+        mustChangePassword: false,
+        phone: acc.phone,
+        emailVerifiedAt: new Date(),
+      },
+    })
+
+    if (role) {
+      await prisma.userRole.upsert({
+        where: { userId_roleId: { userId: user.id, roleId: role.id } },
+        update: {},
+        create: { userId: user.id, roleId: role.id },
+      })
+    }
+
+    if (acc.unitCode) {
+      const unit = await prisma.internalUnit.findUnique({ where: { code: acc.unitCode } })
+      if (unit) {
+        await prisma.userInternalUnit.upsert({
+          where: { userId_internalUnitId: { userId: user.id, internalUnitId: unit.id } },
+          update: {},
+          create: { userId: user.id, internalUnitId: unit.id, position: 'Pegawai Berdaftar' },
+        })
+      }
+    }
+
+    if (acc.companyName) {
+      const org = await prisma.organisation.upsert({
+        where: { uuid: 'org-kemaman-supply-base' },
+        update: { name: acc.companyName, registrationNo: acc.ssmNo, status: 'verified' },
+        create: {
+          uuid: 'org-kemaman-supply-base',
+          name: acc.companyName,
+          type: 'SYARIKAT',
+          registrationNo: acc.ssmNo,
+          status: 'verified',
+          verifiedAt: new Date(),
+        },
+      })
+
+      await prisma.organisationUser.upsert({
+        where: { organisationId_userId: { organisationId: org.id, userId: user.id } },
+        update: { isPrimaryContact: true },
+        create: {
+          organisationId: org.id,
+          userId: user.id,
+          roleInOrg: 'Wakil Berdaftar',
+          isPrimaryContact: true,
+          verifiedAt: new Date(),
+        },
+      })
+    }
+  }
+  console.log(`  ${DUMMY_USERS.length} demo user accounts`)
+
   console.log('Done.')
 }
+
 
 main()
   .catch((e) => {
