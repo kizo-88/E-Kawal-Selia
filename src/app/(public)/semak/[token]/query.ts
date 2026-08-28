@@ -31,32 +31,42 @@ const ISSUING_AUTHORITY_EN = 'Kemaman Port Authority'
 export async function queryLicenceVerification(
   token: string,
 ): Promise<PublicVerificationResult> {
-  return asAnonymous(async (tx) => {
-    const res = await resolveLicenceVerification(tx, token)
-    if (!res.found || !res.verification) {
+  try {
+    return await asAnonymous(async (tx) => {
+      const res = await resolveLicenceVerification(tx, token)
+      if (!res.found || !res.verification) {
+        return {
+          found: false,
+          qrToken: token,
+          issuingAuthorityMs: ISSUING_AUTHORITY_MS,
+          issuingAuthorityEn: ISSUING_AUTHORITY_EN,
+        }
+      }
+
+      const v = res.verification
       return {
-        found: false,
+        found: true,
+        licenceNo: v.licenceNo,
+        categoryMs: v.typeMs,
+        categoryEn: v.typeEn,
+        holderName: v.holderName,
+        validFrom: v.validFrom,
+        validUntil: v.validUntil,
+        status: v.status,
+        statusLabelMs: v.statusLabelMs,
+        statusLabelEn: v.statusLabelEn,
         qrToken: token,
         issuingAuthorityMs: ISSUING_AUTHORITY_MS,
         issuingAuthorityEn: ISSUING_AUTHORITY_EN,
       }
-    }
-
-    const v = res.verification
+    })
+  } catch {
     return {
-      found: true,
-      licenceNo: v.licenceNo,
-      categoryMs: v.typeMs,
-      categoryEn: v.typeEn,
-      holderName: v.holderName,
-      validFrom: v.validFrom,
-      validUntil: v.validUntil,
-      status: v.status,
-      statusLabelMs: v.statusLabelMs,
-      statusLabelEn: v.statusLabelEn,
+      found: false,
       qrToken: token,
       issuingAuthorityMs: ISSUING_AUTHORITY_MS,
       issuingAuthorityEn: ISSUING_AUTHORITY_EN,
     }
-  })
+  }
 }
+

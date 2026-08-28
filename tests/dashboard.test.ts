@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { HISTOGRAM_DATA_2026 } from '../src/components/dashboard/histogram-chart'
 import { FIXTURE_APPLICATIONS, STATUS_OPTIONS } from '../src/components/dashboard/recent-applications-table'
-import { BASELINE_MENU_SOURCE_ITEMS } from '../src/app/(admin)/layout'
+import { BASELINE_MENU_SOURCE_ITEMS } from '../src/lib/menu/menu-items'
 import { buildMenuTree } from '../src/lib/menu/menu-pure'
+
+
 
 describe('GP-15 Dashboard & Visual Analytics', () => {
   describe('Histogram Monthly Data (GP-15)', () => {

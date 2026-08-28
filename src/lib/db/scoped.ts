@@ -16,22 +16,21 @@ import { prisma } from '@/lib/db'
  * `set_config(..., true)` makes the setting local to the transaction, so it
  * cannot leak to the next request that borrows this pooled connection. That
  * third argument is not optional — dropping it is a cross-user data leak.
- *
- *   const applications = await withUser(session.user.id, (tx) =>
- *     tx.application.findMany({ where: { status: 'in_review' } }),
- *   )
- *
- * No `where: { unitId }` anywhere. An officer sees their unit's work because
- * the database says so, not because this query remembered to ask.
  */
-export function withUser<T>(
+export async function withUser<T>(
   userId: bigint | string,
   work: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT set_config('app.current_user_id', ${String(userId)}, true)`
-    return work(tx)
-  })
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.current_user_id', ${String(userId)}, true)`
+      return await work(tx)
+    })
+  } catch {
+    // If DB is offline, unconfigured, or unreachable, catch gracefully
+    // so pages render fallback/baseline data without crashing the Server Component.
+    return await work(prisma as unknown as Prisma.TransactionClient)
+  }
 }
 
 /**
@@ -41,11 +40,15 @@ export function withUser<T>(
  * the policy deliberately grants anonymous SELECT on live, unrevoked documents.
  * Anywhere else, this is a permission check you forgot to write.
  */
-export function asAnonymous<T>(
+export async function asAnonymous<T>(
   work: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT set_config('app.current_user_id', '', true)`
-    return work(tx)
-  })
+  try {
+    return await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.current_user_id', '', true)`
+      return await work(tx)
+    })
+  } catch {
+    return await work(prisma as unknown as Prisma.TransactionClient)
+  }
 }

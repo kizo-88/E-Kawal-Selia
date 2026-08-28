@@ -82,7 +82,12 @@ export async function queryReviewQueue(
 ): Promise<ReviewQueueItem[]> {
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async () => {
+  try {
+    return await withUser(uid, async () => {
+      return BASELINE_REVIEW_QUEUE
+    })
+  } catch {
     return BASELINE_REVIEW_QUEUE
-  })
+  }
 }
+

@@ -86,8 +86,13 @@ export async function queryLicenceDetail(
   void licenceId
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async () => {
+  try {
+    return await withUser(uid, async () => {
+      return BASELINE_LICENCE_DETAIL
+    })
+  } catch {
     return BASELINE_LICENCE_DETAIL
-  })
+  }
 }
+
 
