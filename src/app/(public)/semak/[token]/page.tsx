@@ -122,20 +122,22 @@ export default async function PublicVerificationPage({ params }: VerificationPag
                 </div>
 
                 {/* Token Signature Footprint */}
-                <div className="p-4 bg-slate-100 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-200">
-                  <div className="flex items-center gap-3">
+                <div className="p-5 bg-slate-100 rounded-xl text-xs text-slate-700 flex flex-col sm:flex-row items-center justify-between gap-5 border border-slate-200">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                     <QRCodeView
                       value={`http://localhost:3001/semak/${record.qrToken}`}
-                      size={64}
-                      alt={`Kod QR Semakan ${record.licenceNo}`}
+                      size={110}
+                      alt={`Kod QR Pengesahan ${record.licenceNo}`}
                     />
-                    <div className="space-y-0.5 font-mono text-[11px]">
-                      <span className="font-bold text-slate-900 block">Token Keselamatan Disahkan:</span>
-                      <span className="text-slate-600 block break-all">{record.qrToken}</span>
+                    <div className="space-y-1 font-mono text-xs">
+                      <span className="font-bold text-slate-900 block text-sm">Cap Tapak Keselamatan Kod QR:</span>
+                      <span className="text-slate-600 block break-all text-[11px]">{record.qrToken}</span>
+                      <span className="text-emerald-700 font-semibold text-[11px] block">✓ Disahkan Tulen oleh Lembaga Pelabuhan Kemaman</span>
                     </div>
                   </div>
                   <span className="italic text-[11px] text-slate-500 shrink-0">Piawaian Keselamatan Maritim X-R11 / X-R12</span>
                 </div>
+
 
               </>
             ) : (

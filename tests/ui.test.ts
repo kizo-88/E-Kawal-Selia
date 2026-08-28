@@ -84,4 +84,13 @@ describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
       }
     })
   })
+
+  describe('QR Code 2D Matrix Rendering Component (X-R11, X-R12)', () => {
+    it('exports QRCodeView from UI component library', async () => {
+      const { QRCodeView } = await import('../src/components/ui')
+      expect(QRCodeView).toBeDefined()
+      expect(typeof QRCodeView).toBe('function')
+    })
+  })
 })
+

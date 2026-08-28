@@ -222,28 +222,29 @@ export function LicenceCertificateView({ initialLicence }: LicenceCertificateVie
           {/* Certificate Footer: QR Verification & Digital Seal */}
           <div className="pt-6 border-t-2 border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
             {/* QR Code Verification Widget */}
-            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
               <div className="shrink-0">
                 <QRCodeView
                   value={`http://localhost:3001/semak/${licence.qrToken}`}
-                  size={96}
+                  size={148}
                   alt={`Kod QR Pengesahan Rasmi Lesen ${licence.licenceNo}`}
                 />
               </div>
-              <div className="space-y-1 text-[11px]">
-                <span className="font-bold text-slate-900 block">Pengesahan Kod Keselamatan QR</span>
-                <p className="text-slate-500 text-[10px]">
-                  Imbas menggunakan telefon pintar untuk semakan ketulenan tanpa log masuk (X-R11 / X-R12).
+              <div className="space-y-1.5 text-xs text-center sm:text-left">
+                <span className="font-bold text-[#0b2545] text-sm block">Pengesahan Kod QR Rasmi</span>
+                <p className="text-slate-600 text-[11px] leading-relaxed">
+                  Imbas menggunakan kamera telefon pintar untuk semakan ketulenan serta-merta tanpa log masuk (Piawaian Maritim X-R11 / X-R12).
                 </p>
                 <Link
                   href={`/semak/${licence.qrToken}`}
                   target="_blank"
-                  className="font-mono text-[10px] font-bold text-[#0b2545] hover:underline block truncate"
+                  className="font-mono text-xs font-bold text-[#0b2545] hover:text-[#133e87] hover:underline block truncate pt-1"
                 >
                   /semak/{licence.qrToken.slice(0, 16)}...
                 </Link>
               </div>
             </div>
+
 
 
             {/* Approving Authority Signature Block */}
