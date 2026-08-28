@@ -48,6 +48,9 @@ const SETTINGS = [
   { key: 'organisation.address_line2', isPublic: true, value: 'Peti Surat 66', group: 'organisation', labelMs: 'Alamat 2', labelEn: 'Address Line 2' },
   { key: 'organisation.postcode', isPublic: true, value: '24000', group: 'organisation', labelMs: 'Poskod', labelEn: 'Postcode' },
   { key: 'organisation.city', isPublic: true, value: 'Kemaman', group: 'organisation', labelMs: 'Bandar', labelEn: 'City' },
+  { key: 'organisation.email', value: '', isPublic: true, group: 'organisation', labelMs: 'Emel Rasmi', labelEn: 'Official Email' },
+  { key: 'organisation.phone', value: '', isPublic: true, group: 'organisation', labelMs: 'No. Telefon', labelEn: 'Phone Number' },
+  { key: 'organisation.website', value: '', isPublic: true, group: 'organisation', labelMs: 'Laman Web', labelEn: 'Website' },
   { key: 'organisation.state', isPublic: true, value: 'Terengganu', group: 'organisation', labelMs: 'Negeri', labelEn: 'State' },
 
   // GP-07 formats
