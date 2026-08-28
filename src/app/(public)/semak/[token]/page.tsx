@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Badge } from '../../../../components/ui/badge'
 import { Card, CardContent, CardHeader } from '../../../../components/ui/card'
 import {
-  IconAnchor,
   IconQrCode,
   IconShield,
   IconShieldCheck,
@@ -17,7 +16,6 @@ export default async function PublicVerificationPage({ params }: VerificationPag
   const { token } = await params
   const record = await queryLicenceVerification(token)
   const isFound = record.found
-
 
   return (
     <div className="py-12 bg-slate-50 min-h-[85vh] flex flex-col justify-center">
@@ -36,8 +34,13 @@ export default async function PublicVerificationPage({ params }: VerificationPag
           <CardHeader className="bg-gradient-to-r from-[#0b2545] to-[#133e87] text-white p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
-                  <IconAnchor className="h-6 w-6" />
+                <div className="h-14 w-14 rounded-xl bg-white p-1 shadow-sm border border-white/40 flex items-center justify-center shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/logo-lpkmn.png"
+                    alt="Logo Lembaga Pelabuhan Kemaman"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
                 <div>
                   <h1 className="text-lg sm:text-xl font-bold tracking-tight">
@@ -61,13 +64,12 @@ export default async function PublicVerificationPage({ params }: VerificationPag
             {isFound ? (
               <>
                 {/* Official Seal Banner */}
-
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
                   <IconShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
                   <div>
                     <span className="font-bold block">Dokumen Rasmi Sah Berdaftar</span>
                     <span>
-                      Rekod ini disahkan wujud dalam Pangkalan Data Pelesenan Lembaga Pelabuhan Kemaman.
+                      Rekod ini disahkan wujud dan berkuat kuasa dalam Pangkalan Data Pelesenan Lembaga Pelabuhan Kemaman.
                     </span>
                   </div>
                 </div>
@@ -130,7 +132,7 @@ export default async function PublicVerificationPage({ params }: VerificationPag
                 </div>
               </>
             ) : (
-              <div className="py-8 text-center space-y-3">
+              <div className="py-8 text-center space-y-4">
                 <div className="inline-flex p-3 rounded-full bg-red-100 text-red-600">
                   <IconShield className="h-8 w-8" />
                 </div>
@@ -141,6 +143,29 @@ export default async function PublicVerificationPage({ params }: VerificationPag
                   Kod QR ini tidak sepadan dengan mana-mana sijil lesen atau permit aktif dalam sistem
                   e-Kawalselia LPKmn. Sila hubungi Urus Setia untuk semakan lanjut.
                 </p>
+
+                {/* Sample Verified Links For Demo */}
+                <div className="pt-4 border-t border-slate-200 max-w-md mx-auto text-left space-y-2">
+                  <span className="text-[11px] font-bold text-slate-700 block">
+                    Uji Contoh Sijil Sah Berdaftar:
+                  </span>
+                  <div className="flex flex-col gap-1.5 text-xs">
+                    <Link
+                      href="/semak/7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4"
+                      className="p-2 bg-slate-100 hover:bg-slate-200 rounded-md font-mono text-[#0b2545] font-semibold flex items-center justify-between"
+                    >
+                      <span>LPK/LPS/2026/00142 (Lesen Sokongan)</span>
+                      <span className="text-[10px] text-emerald-700 font-bold">Sah →</span>
+                    </Link>
+                    <Link
+                      href="/semak/3f4e5d6c7b8a9012"
+                      className="p-2 bg-slate-100 hover:bg-slate-200 rounded-md font-mono text-[#0b2545] font-semibold flex items-center justify-between"
+                    >
+                      <span>LPK/PAP/2026/00065 (Permit Aktiviti)</span>
+                      <span className="text-[10px] text-amber-700 font-bold">Amaran →</span>
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
