@@ -25,7 +25,7 @@
     @media print {
       body * { visibility: hidden; }
       #certificate-print-area, #certificate-print-area * { visibility: visible; }
-      #certificate-print-area { position: absolute; left: 0; top: 0; width: 100%; }
+      #certificate-print-area { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; margin: 0; padding: 0; }
       .no-print { display: none !important; }
     }
   </style>
@@ -840,68 +840,117 @@
         <div class="max-w-4xl mx-auto space-y-6">
           <div class="flex items-center justify-between no-print">
             <button onclick="setTab('pelesenan')" class="text-xs font-bold text-slate-600 hover:text-slate-900">← Kembali ke Senarai</button>
-            <button onclick="window.print()" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5">
-              <span>Cetak / Muat Turun PDF</span>
+            <button onclick="window.print()" class="px-5 py-2.5 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span>Cetak / Simpan PDF Rasmi</span>
             </button>
           </div>
 
-          <!-- SIJIL LESEN RASMI (GP-13) -->
-          <div id="certificate-print-area" class="bg-white rounded-2xl shadow-xl border-8 border-double border-[#0b2545] p-8 sm:p-12 space-y-8 relative overflow-hidden">
-            <div class="text-center space-y-3 border-b-2 border-[#0b2545] pb-6">
-              <div class="h-20 w-20 mx-auto flex items-center justify-center">
-                <img src="/images/logo-lpkmn.png" alt="Logo LPKmn" class="h-full w-full object-contain">
-              </div>
-              <h2 class="text-xl sm:text-2xl font-black uppercase tracking-wider text-[#0b2545]">LEMBAGA PELABUHAN KEMAMAN</h2>
-              <p class="text-xs font-bold tracking-widest text-amber-700 uppercase">PORT LICENSING &amp; REGULATORY AUTHORITY</p>
-              <h1 class="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-slate-900 pt-2">${lic.typeName}</h1>
-            </div>
-
-            <div class="space-y-6 text-sm">
-              <div class="text-center">
-                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">No. Pendaftaran Lesen:</span>
-                <div class="text-xl font-mono font-black text-[#0b2545] tracking-widest">${lic.referenceNo}</div>
+          <!-- SIJIL PERAKUAN PELESENAN RASMI (STATUTORY MALAYSIAN GOVERNMENT CERTIFICATE) -->
+          <div id="certificate-print-area" class="bg-white border border-slate-800 p-2 shadow-2xl">
+            <div class="border-2 border-slate-900 p-8 sm:p-12 relative overflow-hidden bg-white text-slate-900">
+              
+              <!-- Subtle Background Seal Watermark -->
+              <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+                <img src="/images/logo-lpkmn.png" alt="Watermark LPKmn" class="w-[500px] h-[500px] object-contain">
               </div>
 
-              <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
-                <div>
-                  <span class="text-xs text-slate-500 uppercase tracking-wider block font-bold">Dikeluarkan Kepada:</span>
-                  <span class="text-lg font-bold text-slate-900 block">${lic.company}</span>
+              <!-- Header: Ministry & Port Authority Letterhead -->
+              <div class="text-center space-y-1.5 relative z-10">
+                <div class="h-16 w-16 mx-auto flex items-center justify-center mb-1">
+                  <img src="/images/logo-lpkmn.png" alt="Logo LPKmn" class="h-full w-full object-contain">
                 </div>
-                <div class="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <span class="text-slate-500 block">Tarikh Berkuat Kuasa:</span>
-                    <span class="font-bold text-slate-900">${lic.validFrom}</span>
+                <h3 class="text-[11px] font-bold uppercase tracking-widest text-slate-700">KEMENTERIAN PENGANGKUTAN MALAYSIA</h3>
+                <h2 class="text-xl sm:text-2xl font-black uppercase tracking-wider text-slate-950 font-serif">LEMBAGA PELABUHAN KEMAMAN</h2>
+                <p class="text-[11px] text-slate-600 font-medium tracking-wide">AKTA LEMBAGA-LEMBAGA PELABUHAN 1969 &bull; PERATURAN-PERATURAN PELABUHAN KEMAMAN</p>
+                
+                <div class="w-full my-3 flex items-center justify-center gap-2">
+                  <div class="h-[1.5px] bg-slate-900 flex-1"></div>
+                  <span class="text-slate-900 text-[10px] font-serif font-bold tracking-widest px-3 uppercase">Dokumen Statutori Rasmi</span>
+                  <div class="h-[1.5px] bg-slate-900 flex-1"></div>
+                </div>
+              </div>
+
+              <!-- Statutory Title & Grant Statement -->
+              <div class="text-center space-y-2 py-3 relative z-10">
+                <h1 class="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-900 font-serif">
+                  ${lic.typeName === 'SURAT_PDA2' || lic.type === 'SURAT_PDA2' ? 'SURAT PERAKUAN SOKONGAN PDA2' : lic.typeName.includes('Permit') ? 'PERMIT OPERASI MARITIM PELABUHAN' : 'PERAKUAN PELESENAN PERKHIDMATAN SOKONGAN'}
+                </h1>
+                <p class="text-xs italic text-slate-700 max-w-2xl mx-auto leading-relaxed">
+                  Adalah dengan ini diperakui bahawa di bawah kuasa yang diperuntukkan di bawah Seksyen 19, Akta Lembaga-Lembaga Pelabuhan 1969, Lembaga Pelabuhan Kemaman memberi kebenaran dan melesenkan kepada:
+                </p>
+              </div>
+
+              <!-- Clean Formal Ledger Table (NO SaaS Boxes) -->
+              <div class="my-5 border-t-2 border-b-2 border-slate-900 text-xs divide-y divide-slate-300 relative z-10">
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">No. Pendaftaran Lesen</span>
+                  <span class="col-span-8 font-mono font-black text-sm text-slate-950">${lic.referenceNo}</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">Nama Pemegang Lesen</span>
+                  <span class="col-span-8 font-bold text-sm text-slate-950">${lic.company}</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">No. Pendaftaran Syarikat (SSM)</span>
+                  <span class="col-span-8 font-mono font-semibold text-slate-900">198201004821 (84592-K)</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">Kategori Pelesenan</span>
+                  <span class="col-span-8 font-semibold text-slate-900">${lic.typeName}</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">Zon Operasi Dibenarkan</span>
+                  <span class="col-span-8 text-slate-900">Dermaga Utama &amp; Had Pelabuhan Kemaman (Zon Bebas Cukai)</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">Tempoh Kuasa Sah Laku</span>
+                  <span class="col-span-8 font-bold text-slate-950">${lic.validFrom} sehingga ${lic.validUntil}</span>
+                </div>
+                <div class="py-2.5 grid grid-cols-12 gap-2 items-baseline">
+                  <span class="col-span-4 font-bold text-slate-700 uppercase tracking-wider">Pematuhan Keselamatan</span>
+                  <span class="col-span-8 text-slate-900 font-medium">Kod Antarabangsa ISPS, Dasar Keselamatan ICT &amp; Aku-Janji Integriti GP-06</span>
+                </div>
+              </div>
+
+              <!-- Statutory Conditions Clause -->
+              <div class="text-[11px] text-slate-700 italic leading-relaxed text-justify space-y-1 pt-1 relative z-10">
+                <p>
+                  <strong>SYARAT-SYARAT AM:</strong> Lesen ini tertakluk kepada pematuhan berterusan terhadap Akta Lembaga-Lembaga Pelabuhan 1969, Pekeliling Pelabuhan, serta syarat-syarat khusus yang ditetapkan oleh Lembaga Pelabuhan Kemaman dari semasa ke semasa. Kegagalan mematuhi peraturan boleh mengakibatkan pembatalan atau penggantungan serta-merta lesen ini.
+                </p>
+              </div>
+
+              <!-- Balanced Government Footer: Digital QR, Mohor Seal & General Manager Signature -->
+              <div class="pt-8 grid grid-cols-12 gap-4 items-end text-xs relative z-10">
+                <!-- Left: Standard ISO/IEC 18004 QR Matrix -->
+                <div class="col-span-5 flex items-center gap-3">
+                  <div class="shrink-0 border border-slate-400 p-1 bg-white">
+                    ${generateQrSvg('https://ekawalselia.web.app/semak/' + lic.qrToken, 96)}
                   </div>
-                  <div>
-                    <span class="text-slate-500 block">Tarikh Tamat Tempoh:</span>
-                    <span class="font-bold text-slate-900">${lic.validUntil}</span>
+                  <div class="space-y-1 text-[10px] text-slate-600">
+                    <span class="font-bold text-slate-900 block uppercase">Pengesahan Digital Rasmi</span>
+                    <span class="font-mono text-[9px] text-slate-500 block truncate">ID: ${lic.qrToken}</span>
+                    <span class="text-slate-500 block">Piawaian ISO/IEC 18004</span>
                   </div>
                 </div>
+
+                <!-- Middle: Official Mohor Stamp -->
+                <div class="col-span-3 flex flex-col items-center justify-center text-center">
+                  <div class="w-18 h-18 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center p-1 text-center text-[8px] font-bold text-slate-600 uppercase tracking-tighter leading-tight">
+                    MOHOR RASMI<br>LEMBAGA PELABUHAN<br>KEMAMAN
+                  </div>
+                </div>
+
+                <!-- Right: Official Signatory Block -->
+                <div class="col-span-4 text-right space-y-1">
+                  <p class="text-[10px] text-slate-500 italic">Dikeluarkan di bawah meterai:</p>
+                  <div class="h-8"></div>
+                  <p class="font-bold text-slate-950 uppercase text-xs">PENGURUS BESAR</p>
+                  <p class="text-slate-700 text-[11px]">Lembaga Pelabuhan Kemaman</p>
+                  <p class="text-slate-500 text-[10px]">Tarikh Dikeluarkan: ${lic.validFrom}</p>
+                </div>
               </div>
 
-              <!-- Large Scannable QR Footprint (148px) -->
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-6 p-6 bg-slate-100 rounded-xl border border-slate-300">
-                <div class="space-y-2 text-center sm:text-left">
-                  <span class="text-xs font-bold text-[#0b2545] uppercase tracking-wider block">PENGESAHAN KETULENAN DIGITAL (QR MATRIX)</span>
-                  <p class="text-xs text-slate-600 max-w-sm">Imbas kod QR di sebelah dengan kamera telefon pintar untuk mengesahkan ketulenan dokumen ini di portal rasmi e-Kawalselia LPKmn.</p>
-                  <span class="text-[10px] font-mono text-slate-500 block">Token: ${lic.qrToken}</span>
-                </div>
-                <div class="shrink-0 flex flex-col items-center">
-                  ${generateQrSvg('https://ekawalselia.web.app/semak/' + lic.qrToken, 148)}
-                  <span class="text-[10px] font-bold text-[#0b2545] pt-1">Imbas Untuk Semak</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-8 border-t border-slate-200 flex justify-between items-end text-xs text-slate-600">
-              <div>
-                <p class="font-bold text-slate-900">Urus Setia Pelesenan &amp; Kawal Selia</p>
-                <p>Lembaga Pelabuhan Kemaman</p>
-              </div>
-              <div class="text-right">
-                <p class="font-bold text-slate-900">Pengurus Besar (PB)</p>
-                <p>Lembaga Pelabuhan Kemaman</p>
-              </div>
             </div>
           </div>
         </div>
