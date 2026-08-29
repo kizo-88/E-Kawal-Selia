@@ -78,4 +78,19 @@ describe("document engine — generateDocument", () => {
     expect(store.audits[0].actionCode).toBe("DOKUMEN_DIJANA");
     expect(store.audits[0].referenceNo).toBe("LPK/LPS/2026/00123");
   });
+
+  it("renders a binary PDF buffer conforming to PDF-1.4 header (GP-13)", async () => {
+    const { renderDocumentToPdf } = await import("../src/lib/documents/pdf");
+    const sampleHtml = `
+      <h1>Sijil Perakuan Lesen</h1>
+      <p>No. Lesen: LPK/LPS/2026/00123</p>
+      <p>Pemegang: Kemaman Supply Base Sdn Bhd</p>
+    `;
+    const pdfBuffer = await renderDocumentToPdf(sampleHtml);
+    expect(pdfBuffer).toBeInstanceOf(Buffer);
+    expect(pdfBuffer.length).toBeGreaterThan(100);
+    expect(pdfBuffer.toString("latin1").startsWith("%PDF-1.4")).toBe(true);
+    expect(pdfBuffer.toString("latin1")).toContain("%%EOF");
+  });
 });
+

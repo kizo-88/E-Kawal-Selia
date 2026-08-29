@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import {
-  IconAnchor,
   IconBuilding,
   IconExternalLink,
   IconMail,
@@ -8,9 +7,8 @@ import {
   IconShield,
 } from '../ui/icons'
 
-
-
 export interface OrganisationInfo {
+
   nameMs: string
   nameEn: string
   secretariatMs: string
@@ -39,10 +37,11 @@ export const LPKMN_ORG_INFO: OrganisationInfo = {
   stateCode: 'Terengganu Darul Iman',
   coordinates: '4.2486° N, 103.4567° E',
   phone: '+609-863 1590 / 1591',
-  email: 'kawalselia@lpktg.gov.my',
-  website: 'https://www.lpktg.gov.my',
+  email: 'kawalselia@lpkmn.gov.my',
+  website: 'https://www.lpkmn.gov.my/',
   goLiveYear: 2026,
 }
+
 
 export function PublicFooter() {
   return (
@@ -52,8 +51,13 @@ export function PublicFooter() {
           {/* Column 1: LPKmn & e-Kawalselia info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                <IconAnchor className="h-6 w-6" />
+              <div className="h-12 w-12 rounded-xl bg-white p-1 shadow-sm border border-slate-700 flex items-center justify-center shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/logo-lpkmn.png"
+                  alt="Logo Rasmi Lembaga Pelabuhan Kemaman"
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div>
                 <span className="text-lg font-bold text-white tracking-tight">
@@ -64,6 +68,7 @@ export function PublicFooter() {
                 </span>
               </div>
             </div>
+
             <p className="text-xs text-slate-400 leading-relaxed">
               Portal rasmi perkhidmatan pelesenan, permit aktiviti maritim, sokongan PDA2, dan
               pengawasan kawal selia operasi Lembaga Pelabuhan Kemaman.
@@ -165,7 +170,7 @@ export function PublicFooter() {
               </li>
               <li>
                 <a
-                  href="https://www.lpktg.gov.my"
+                  href="https://www.lpkmn.gov.my/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-amber-400 transition-colors flex items-center gap-1.5"
@@ -174,6 +179,7 @@ export function PublicFooter() {
                   <IconExternalLink className="h-3 w-3" />
                 </a>
               </li>
+
             </ul>
           </div>
         </div>

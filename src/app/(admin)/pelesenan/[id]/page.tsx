@@ -3,11 +3,13 @@ import { LicenceCertificateView } from '../../../../components/pelesenan/licence
 
 export const dynamic = 'force-dynamic'
 
+
 interface LicenceCertificatePageProps {
   params: Promise<{ id: string }>
 }
 
 export default async function LicenceCertificatePage({ params }: LicenceCertificatePageProps) {
+
   const { id } = await params
   const licence = await queryLicenceDetail('1', id)
 

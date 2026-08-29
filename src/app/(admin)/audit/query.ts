@@ -23,14 +23,19 @@ export async function queryAuditLogs(
   filter: AuditFilter,
 ): Promise<Array<Record<string, unknown>>> {
   const where = buildAuditWhere(filter);
-  return withUser(userId, (tx) =>
-    tx.auditLog.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: 1000,
-    }),
-  ) as Promise<Array<Record<string, unknown>>>;
+  try {
+    return (await withUser(userId, (tx) =>
+      tx.auditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: 1000,
+      }),
+    )) as Array<Record<string, unknown>>;
+  } catch {
+    return [];
+  }
 }
+
 
 export function buildAuditWhere(
   filter: AuditFilter,

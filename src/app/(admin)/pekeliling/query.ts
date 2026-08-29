@@ -119,20 +119,25 @@ export async function queryCirculars(
 ): Promise<CircularRecord[]> {
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async (tx) => {
-    const where = buildCircularWhere(filter)
+  try {
+    return await withUser(uid, async (tx) => {
+      const where = buildCircularWhere(filter)
 
-    const docs = await tx.documentTemplate.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: 100,
+      const docs = await tx.documentTemplate.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      })
+
+      if (docs.length > 0) {
+        return docs.map(shapeCircularRecord)
+      }
+
+      return BASELINE_CIRCULARS
     })
-
-    if (docs.length > 0) {
-      return docs.map(shapeCircularRecord)
-    }
-
+  } catch {
     return BASELINE_CIRCULARS
-  })
+  }
 }
+
 

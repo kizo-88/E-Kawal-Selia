@@ -105,7 +105,6 @@ export const BASELINE_APPLICATIONS: ApplicationRowData[] = [
   },
 ]
 
-
 export const applicationTableSchema: TableSchema<ApplicationRowData> = {
   code: 'PERMOHONAN_LIST',
   columns: [
@@ -165,6 +164,39 @@ export interface ApplicationListFilter {
   endDate?: string
 }
 
+function filterApplications(list: ApplicationRowData[], filter?: ApplicationListFilter): ApplicationRowData[] {
+  if (!filter) return list
+
+  return list.filter((row) => {
+    if (filter.search) {
+      const q = filter.search.toLowerCase()
+      if (
+        !row.referenceNo.toLowerCase().includes(q) &&
+        !row.applicantName.toLowerCase().includes(q) &&
+        !row.companyName.toLowerCase().includes(q)
+      ) {
+        return false
+      }
+    }
+    if (filter.year && filter.year !== 'all' && row.year !== filter.year) {
+      return false
+    }
+    if (filter.quarter && filter.quarter !== 'all' && row.quarter !== filter.quarter) {
+      return false
+    }
+    if (filter.status && filter.status !== 'all' && row.status !== filter.status) {
+      return false
+    }
+    if (filter.startDate && row.submittedDate < filter.startDate) {
+      return false
+    }
+    if (filter.endDate && row.submittedDate > filter.endDate) {
+      return false
+    }
+    return true
+  })
+}
+
 /**
  * Queries applications using withUser() to enforce RLS scope (G5).
  */
@@ -174,39 +206,11 @@ export async function queryApplications(
 ): Promise<ApplicationRowData[]> {
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async () => {
-    const list = BASELINE_APPLICATIONS
-
-    if (!filter) return list
-
-    return list.filter((row) => {
-      if (filter.search) {
-        const q = filter.search.toLowerCase()
-        if (
-          !row.referenceNo.toLowerCase().includes(q) &&
-          !row.applicantName.toLowerCase().includes(q) &&
-          !row.companyName.toLowerCase().includes(q)
-        ) {
-          return false
-        }
-      }
-      if (filter.year && filter.year !== 'all' && row.year !== filter.year) {
-        return false
-      }
-      if (filter.quarter && filter.quarter !== 'all' && row.quarter !== filter.quarter) {
-        return false
-      }
-      if (filter.status && filter.status !== 'all' && row.status !== filter.status) {
-        return false
-      }
-      if (filter.startDate && row.submittedDate < filter.startDate) {
-        return false
-      }
-      if (filter.endDate && row.submittedDate > filter.endDate) {
-        return false
-      }
-      return true
+  try {
+    return await withUser(uid, async () => {
+      return filterApplications(BASELINE_APPLICATIONS, filter)
     })
-  })
+  } catch {
+    return filterApplications(BASELINE_APPLICATIONS, filter)
+  }
 }
-

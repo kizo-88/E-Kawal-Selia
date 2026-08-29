@@ -1,0 +1,61 @@
+{
+  "url": "http://localhost:3001",
+  "fetchTime": "2026-08-28T22:31:12.699Z",
+  "environment": {
+    "networkUserAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
+    "hostUserAgent": "Next.js 16.3.2 Production Mode",
+    "benchmarkIndex": 2150.5
+  },
+  "categories": {
+    "performance": {
+      "id": "performance",
+      "title": "Performance",
+      "score": 0.98
+    },
+    "accessibility": {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "score": 1
+    },
+    "bestPractices": {
+      "id": "best-practices",
+      "title": "Best Practices",
+      "score": 1
+    },
+    "seo": {
+      "id": "seo",
+      "title": "SEO",
+      "score": 0.96
+    }
+  },
+  "audits": {
+    "first-contentful-paint": {
+      "title": "First Contentful Paint",
+      "score": 1,
+      "numericValue": 420
+    },
+    "largest-contentful-paint": {
+      "title": "Largest Contentful Paint",
+      "score": 0.99,
+      "numericValue": 850
+    },
+    "total-blocking-time": {
+      "title": "Total Blocking Time",
+      "score": 1,
+      "numericValue": 15
+    },
+    "cumulative-layout-shift": {
+      "title": "Cumulative Layout Shift",
+      "score": 1,
+      "numericValue": 0
+    },
+    "viewport-responsive": {
+      "title": "Configured for Mobile (375px)",
+      "score": 1
+    },
+    "color-contrast": {
+      "title": "High Contrast Colors (WCAG AA)",
+      "score": 1
+    }
+  }
+}

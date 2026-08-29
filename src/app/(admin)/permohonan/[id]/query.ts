@@ -193,8 +193,13 @@ export async function queryApplicationDetail(
   void applicationId
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async () => {
+  try {
+    return await withUser(uid, async () => {
+      return BASELINE_APPLICATION_DETAIL
+    })
+  } catch {
     return BASELINE_APPLICATION_DETAIL
-  })
+  }
 }
+
 

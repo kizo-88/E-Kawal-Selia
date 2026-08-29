@@ -8,8 +8,9 @@ const eslintConfig = [
   ...nextTypescript,
 
   {
-    ignores: ['.next/**', 'node_modules/**', 'src/generated/**', 'next-env.d.ts'],
+    ignores: ['.next/**', '.firebase/**', 'out/**', 'node_modules/**', 'src/generated/**', 'next-env.d.ts'],
   },
+
 
   /*
    * RULES.md, enforced.

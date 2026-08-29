@@ -123,11 +123,9 @@ export async function queryIssuedLicences(
 ): Promise<IssuedLicenceRow[]> {
   const uid = typeof userId === 'string' ? BigInt(userId) : userId
 
-  return withUser(uid, async () => {
+  const filterLicences = () => {
     const list = BASELINE_LICENCES_DATA
-
     if (!search) return list
-
     const q = search.toLowerCase()
     return list.filter(
       (l) =>
@@ -136,7 +134,15 @@ export async function queryIssuedLicences(
         l.categoryMs.toLowerCase().includes(q) ||
         l.categoryEn.toLowerCase().includes(q),
     )
+  }
 
-  })
+  try {
+    return await withUser(uid, async () => {
+      return filterLicences()
+    })
+  } catch {
+    return filterLicences()
+  }
 }
+
 

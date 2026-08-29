@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { LPKMN_ORG_INFO } from '../src/components/layout/public-footer'
 import { FIXTURE_ANNOUNCEMENTS, FIXTURE_FAQS } from '../src/components/layout/announcements-panel'
-import { SERVICES_LIST, HELP_TIPS } from '../src/app/(public)/page'
+import { SERVICES_LIST, HELP_TIPS } from '../src/components/public/home-constants'
+
 
 describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
   describe('Organisation & Footer Config (GP-08, GP-23)', () => {
@@ -21,10 +22,11 @@ describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
     })
 
     it('contains official secretariat and contact info', () => {
-      expect(LPKMN_ORG_INFO.email).toBe('kawalselia@lpktg.gov.my')
+      expect(LPKMN_ORG_INFO.email).toBe('kawalselia@lpkmn.gov.my')
       expect(LPKMN_ORG_INFO.phone).toContain('863 1590')
-      expect(LPKMN_ORG_INFO.website).toContain('lpktg.gov.my')
+      expect(LPKMN_ORG_INFO.website).toBe('https://www.lpkmn.gov.my/')
     })
+
   })
 
   describe('Announcements & Content Panel (GP-21, GP-17)', () => {
@@ -83,4 +85,13 @@ describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
       }
     })
   })
+
+  describe('QR Code 2D Matrix Rendering Component (X-R11, X-R12)', () => {
+    it('exports QRCodeView from UI component library', async () => {
+      const { QRCodeView } = await import('../src/components/ui')
+      expect(QRCodeView).toBeDefined()
+      expect(typeof QRCodeView).toBe('function')
+    })
+  })
 })
+
