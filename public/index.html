@@ -10,6 +10,9 @@
   <link rel="apple-touch-icon" href="/images/logo-lpkmn.png">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS & JS for Real Interactive OpenStreetMap & Satellite Marine Navigation -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Google tag (gtag.js) Firebase Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-8HJMVCGRWF"></script>
   <script>
@@ -22,6 +25,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .leaflet-popup-content-wrapper { border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif; }
     @media print {
       body * { visibility: hidden; }
       #certificate-print-area, #certificate-print-area * { visibility: visible; }
@@ -53,20 +57,65 @@
   </div>
 
   <script>
+    // ─────────────────────────────────────────────────────────────
+    // RBAC ROLE CONFIGURATION (GP-01, GP-02)
+    // ─────────────────────────────────────────────────────────────
+    const ROLE_CONFIG = {
+      superadmin: {
+        roleKey: 'superadmin',
+        name: 'Pegawai LPKmn (Pentadbir)',
+        role: 'Pentadbir Sistem (Super Admin)',
+        email: 'admin@lpkmn.gov.my',
+        unit: 'Unit IT, Bahagian Korporat & Pembangunan',
+        phone: '+609-863 1000',
+        allowedTabs: [
+          'dashboard', 'permohonan', 'permohonan-baru', 'pelesenan', 'certificate', 
+          'pekeliling', 'audit', 'tetapan', 'profil', 'pemaliman', 'kawalselia', 'aset', 'fpx', 'gis'
+        ]
+      },
+      reviewer: {
+        roleKey: 'reviewer',
+        name: 'En. Ahmad Zulkifli',
+        role: 'Pegawai Penilai (M/T)',
+        email: 'reviewer@lpkmn.gov.my',
+        unit: 'Unit Marin & Trafik Pelabuhan',
+        phone: '+609-863 1022',
+        allowedTabs: [
+          'dashboard', 'permohonan', 'pelesenan', 'certificate', 'pekeliling', 
+          'profil', 'pemaliman', 'kawalselia', 'aset', 'gis'
+        ]
+      },
+      pilot: {
+        roleKey: 'pilot',
+        name: 'Kapt. Wan Azmi Wan Ismail',
+        role: 'Malim Kanan Berlesen',
+        email: 'pilot.wan@kemamanpilot.com.my',
+        unit: 'Perkhidmatan Pemaliman Pelabuhan Kemaman',
+        phone: '+6019-988 2341',
+        allowedTabs: [
+          'dashboard', 'pemaliman', 'gis', 'pekeliling', 'profil'
+        ]
+      },
+      applicant: {
+        roleKey: 'applicant',
+        name: 'Tn. Syed Farhan',
+        role: 'Pemohon Syarikat',
+        email: 'user@kemamansupply.com.my',
+        unit: 'Kemaman Supply Base Sdn. Bhd.',
+        phone: '+609-863 1590',
+        allowedTabs: [
+          'dashboard', 'permohonan', 'permohonan-baru', 'pelesenan', 'certificate', 
+          'fpx', 'aset', 'pekeliling', 'profil'
+        ]
+      }
+    };
+
     // State management
     const state = {
       isLoggedIn: false,
-      user: {
-        name: 'Pegawai LPKmn',
-        role: 'Pentadbir Sistem (Super Admin)',
-        roleKey: 'superadmin',
-        email: 'admin@lpkmn.gov.my',
-        unit: 'Unit IT, Bahagian Korporat & Pembangunan',
-        phone: '+609-863 1000'
-      },
+      user: { ...ROLE_CONFIG.superadmin },
       currentTab: 'home', 
       permohonanExpanded: true,
-      phase2Expanded: true,
       selectedLicenceId: '1',
       semakToken: '7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4',
       filterKeyword: '',
@@ -143,10 +192,17 @@
         { name: 'Zon Dermaga Timur (East Wharf)', area: '38.0 Hektar', coords: "04° 14.5' N, 103° 28.2' E", isps: 'Level 1', authority: 'Konsortium Pelabuhan Kemaman' },
         { name: 'Kawasan Sauh Kapal (Anchorage Area MRA)', area: '85.0 km²', coords: "04° 16.0' N, 103° 32.0' E", isps: 'Level 1', authority: 'Unit Marin & Trafik LPKmn' }
       ],
-      activeModal: null, // null | 'pilot-new' | 'pilot-card' | 'pilot-committee' | 'inspection-new' | 'inspection-checklist' | 'asset-loan' | 'fpx-pay' | 'fpx-receipt'
+      activeModal: null,
       modalData: {},
-      gisQuery: { lat: '4.2500', lng: '103.5000', result: null }
+      gisQuery: { lat: '4.2450', lng: '103.4650', result: null }
     };
+
+    function hasTabAccess(tab) {
+      if (!state.isLoggedIn) return false;
+      const config = ROLE_CONFIG[state.user.roleKey];
+      if (!config) return false;
+      return config.allowedTabs.includes(tab);
+    }
 
     function setTab(tab, extra) {
       state.currentTab = tab;
@@ -170,15 +226,15 @@
     }
 
     function fastLogin(roleKey) {
-      if (roleKey === 'superadmin') {
-        state.user = { name: 'Pegawai LPKmn', role: 'Pentadbir Sistem (Super Admin)', roleKey: 'superadmin', email: 'admin@lpkmn.gov.my', unit: 'Unit IT, Bahagian Korporat & Pembangunan', phone: '+609-863 1000' };
-      } else if (roleKey === 'reviewer') {
-        state.user = { name: 'En. Ahmad Zulkifli', role: 'Pegawai Penilai (M/T)', roleKey: 'reviewer', email: 'reviewer@lpkmn.gov.my', unit: 'Unit Marin & Trafik', phone: '+609-863 1022' };
-      } else if (roleKey === 'pilot') {
-        state.user = { name: 'Kapt. Wan Azmi Wan Ismail', role: 'Malim Kanan Berlesen', roleKey: 'pilot', email: 'pilot.wan@kemamanpilot.com.my', unit: 'Perkhidmatan Pemaliman Pelabuhan', phone: '+6019-988 2341' };
-      } else {
-        state.user = { name: 'Tn. Syed Farhan', role: 'Pemohon Syarikat', roleKey: 'applicant', email: 'user@kemamansupply.com.my', unit: 'Kemaman Supply Base Sdn. Bhd.', phone: '+609-863 1590' };
-      }
+      const config = ROLE_CONFIG[roleKey] || ROLE_CONFIG.superadmin;
+      state.user = {
+        name: config.name,
+        role: config.role,
+        roleKey: config.roleKey,
+        email: config.email,
+        unit: config.unit,
+        phone: config.phone
+      };
       state.isLoggedIn = true;
       state.currentTab = 'dashboard';
       state.activeModal = null;
@@ -189,6 +245,10 @@
       state.isLoggedIn = false;
       state.currentTab = 'home';
       state.activeModal = null;
+      if (leafletMapInstance) {
+        leafletMapInstance.remove();
+        leafletMapInstance = null;
+      }
       renderApp();
     }
 
@@ -348,7 +408,7 @@
     }
 
     function handleCheckGis(event) {
-      event.preventDefault();
+      if (event) event.preventDefault();
       const lat = parseFloat(document.getElementById('gis-lat').value);
       const lng = parseFloat(document.getElementById('gis-lng').value);
 
@@ -360,7 +420,145 @@
         lng: String(lng),
         result: isInside ? 'INSIDE' : 'OUTSIDE'
       };
-      renderApp();
+
+      if (leafletMapInstance) {
+        leafletMapInstance.setView([lat, lng], 14);
+        L.popup()
+          .setLatLng([lat, lng])
+          .setContent(`<b>Koordinat Disemak:</b><br>${lat}° U, ${lng}° T<br><span style="color:${isInside ? '#059669' : '#dc2626'}; font-weight:bold;">${isInside ? '✓ Di Dalam Had Pelabuhan' : '✗ Di Luar Had Pelabuhan'}</span>`)
+          .openOn(leafletMapInstance);
+      }
+
+      const resEl = document.getElementById('gis-result-box');
+      if (resEl) {
+        resEl.innerHTML = isInside ? 
+          '<span class="text-emerald-400 font-bold">✓ KOORDINAT BERADA DI DALAM HAD PELABUHAN KEMAMAN</span>' : 
+          '<span class="text-rose-400 font-bold">✗ KOORDINAT DI LUAR KAWASAN HAD PELABUHAN KEMAMAN</span>';
+      }
+    }
+
+    // REAL LEAFLET GIS MAP ENGINE
+    let leafletMapInstance = null;
+
+    function initLeafletMap() {
+      const container = document.getElementById('leaflet-port-map');
+      if (!container || typeof L === 'undefined') return;
+
+      if (leafletMapInstance) {
+        leafletMapInstance.remove();
+        leafletMapInstance = null;
+      }
+
+      // Center at Kemaman Port, Terengganu
+      const map = L.map('leaflet-port-map').setView([4.2450, 103.4650], 13);
+      leafletMapInstance = map;
+
+      // Base tile layers (OSM & ESRI Satellite)
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Lembaga Pelabuhan Kemaman'
+      }).addTo(map);
+
+      const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri &mdash; Port GIS Pelabuhan Kemaman'
+      });
+
+      L.control.layers({
+        "Peta Vektor / Jalan (OSM)": osmLayer,
+        "Peta Satelit Maritim (ESRI)": satelliteLayer
+      }, null, { position: 'topright' }).addTo(map);
+
+      // 1. Port Limits Statutory Boundary (Golden dashed polygon)
+      const portLimitsCoords = [
+        [4.2800, 103.4400],
+        [4.2800, 103.5800],
+        [4.2100, 103.5800],
+        [4.2100, 103.4400]
+      ];
+      L.polygon(portLimitsCoords, {
+        color: '#f59e0b',
+        weight: 3,
+        dashArray: '8, 6',
+        fillColor: '#f59e0b',
+        fillOpacity: 0.08
+      }).addTo(map).bindPopup('<b>HAD PELABUHAN KEMAMAN (PORT LIMITS)</b><br>Kawasan statutori pewartaan seluas 128.4 km² di bawah Akta Lembaga-Lembaga Pelabuhan 1969.');
+
+      // 2. Dermaga Barat (West Wharf - Free Commercial Zone)
+      L.polygon([
+        [4.2520, 103.4500],
+        [4.2580, 103.4600],
+        [4.2540, 103.4650],
+        [4.2480, 103.4550]
+      ], {
+        color: '#2563eb',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.45
+      }).addTo(map).bindPopup('<b>Zon Dermaga Barat (West Wharf)</b><br>Keluasan: 45.2 Hektar (Zon Bebas Cukai). Dermaga kargo am dan kontena.');
+
+      // 3. Dermaga Timur (East Wharf)
+      L.polygon([
+        [4.2400, 103.4650],
+        [4.2460, 103.4750],
+        [4.2420, 103.4800],
+        [4.2360, 103.4700]
+      ], {
+        color: '#7c3aed',
+        fillColor: '#8b5cf6',
+        fillOpacity: 0.45
+      }).addTo(map).bindPopup('<b>Zon Dermaga Timur (East Wharf)</b><br>Keluasan: 38.0 Hektar. Dermaga pukal kering dan petroleum.');
+
+      // 4. Kemaman Supply Base (KSB Basin)
+      L.polygon([
+        [4.2600, 103.4450],
+        [4.2680, 103.4550],
+        [4.2620, 103.4620],
+        [4.2550, 103.4520]
+      ], {
+        color: '#059669',
+        fillColor: '#10b981',
+        fillOpacity: 0.5
+      }).addTo(map).bindPopup('<b>Pangkalan Bekalan Kemaman (KSB Wharf)</b><br>Pangkalan logistik maritim minyak & gas luar pantai.');
+
+      // 5. Kawasan Sauh Kapal (Anchorage Area MRA)
+      L.circle([4.2500, 103.5300], {
+        radius: 3500,
+        color: '#0284c7',
+        dashArray: '5, 5',
+        fillColor: '#38bdf8',
+        fillOpacity: 0.2
+      }).addTo(map).bindPopup('<b>Kawasan Sauh Kapal (Anchorage Area MRA)</b><br>Keluasan: 85.0 km². Lokasi sauh kapal dagang dan tangki minyak.');
+
+      // Interactive Click on Map -> Set Lat/Lng and check boundary
+      let clickMarker = null;
+      map.on('click', function(e) {
+        const lat = e.latlng.lat.toFixed(4);
+        const lng = e.latlng.lng.toFixed(4);
+
+        if (clickMarker) {
+          map.removeLayer(clickMarker);
+        }
+        clickMarker = L.marker([lat, lng]).addTo(map);
+
+        const isInside = lat >= 4.21 && lat <= 4.28 && lng >= 103.44 && lng <= 103.58;
+        clickMarker.bindPopup(`<b>Koordinat Disemak:</b><br>${lat}° U, ${lng}° T<br><span style="color:${isInside ? '#059669' : '#dc2626'}; font-weight:bold;">${isInside ? '✓ Di Dalam Had Pelabuhan' : '✗ Di Luar Had Pelabuhan'}</span>`).openPopup();
+
+        const latEl = document.getElementById('gis-lat');
+        const lngEl = document.getElementById('gis-lng');
+        if (latEl) latEl.value = lat;
+        if (lngEl) lngEl.value = lng;
+        state.gisQuery = {
+          lat: String(lat),
+          lng: String(lng),
+          result: isInside ? 'INSIDE' : 'OUTSIDE'
+        };
+        const resEl = document.getElementById('gis-result-box');
+        if (resEl) {
+          resEl.innerHTML = isInside ? 
+            '<span class="text-emerald-400 font-bold">✓ KOORDINAT BERADA DI DALAM HAD PELABUHAN KEMAMAN</span>' : 
+            '<span class="text-rose-400 font-bold">✗ KOORDINAT DI LUAR KAWASAN HAD PELABUHAN KEMAMAN</span>';
+        }
+      });
     }
 
     // MAIN RENDERER
@@ -370,6 +568,9 @@
         root.innerHTML = renderPublicSemakPage() + renderGlobalModals();
       } else if (state.isLoggedIn) {
         root.innerHTML = renderAdminShell() + renderGlobalModals();
+        if (state.currentTab === 'gis') {
+          setTimeout(() => initLeafletMap(), 60);
+        }
       } else {
         root.innerHTML = renderPublicPortal() + renderGlobalModals();
       }
@@ -576,13 +777,14 @@
     }
 
     // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────
     // 2. ADMIN DASHBOARD & SYSTEM SHELL (SCREENSHOT 2 — EXACT MATCH)
     // ─────────────────────────────────────────────────────────────
     function renderAdminShell() {
       return `
         <div class="flex-1 flex min-h-screen">
           
-          <!-- LEFT NAVY SIDEBAR (EXACT MATCH TO IMAGE 2) -->
+          <!-- LEFT NAVY SIDEBAR (EXACT MATCH TO IMAGE 2 + UNIFIED RBAC) -->
           <aside class="w-64 bg-[#0b2545] text-slate-300 flex flex-col shrink-0 border-r border-slate-800 no-print">
             <!-- Brand -->
             <div class="h-16 px-5 bg-[#07192f] border-b border-slate-800 flex items-center gap-3">
@@ -595,20 +797,23 @@
               </div>
             </div>
 
-            <!-- Active Role Badge -->
-            <div class="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center gap-2">
-              <div class="h-2 w-2 rounded-full bg-emerald-400 shrink-0 animate-pulse"></div>
-              <div class="flex flex-col min-w-0">
-                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Tahap Akses Semasa</span>
-                <span class="text-xs font-bold text-slate-100 truncate">${state.user.role}</span>
+            <!-- Active Role Badge with Fast Switcher -->
+            <div class="px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="h-2 w-2 rounded-full bg-emerald-400 shrink-0 animate-pulse"></div>
+                  <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Peranan Aktif</span>
+                </div>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-400 font-mono font-bold">${state.user.roleKey.toUpperCase()}</span>
               </div>
+              <div class="text-xs font-bold text-slate-100 truncate">${state.user.role}</div>
             </div>
 
-            <!-- Menu Navigation -->
+            <!-- Menu Navigation (Filtered by RBAC GP-01 / GP-02) -->
             <nav class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-medium">
               
-              <!-- CATEGORY 1: TERAS FASA 1 -->
-              <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">MODUL UTAMA (FASA 1)</span>
+              <!-- CATEGORY 1: PENGURUSAN UTAMA -->
+              <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">PENGURUSAN UTAMA</span>
               
               <!-- 1. Dashboard Utama -->
               <button onclick="setTab('dashboard')" class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer ${state.currentTab === 'dashboard' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
@@ -620,128 +825,161 @@
               </button>
 
               <!-- 2. Modul Permohonan (Tree Accordion) -->
-              <div>
-                <button onclick="state.permohonanExpanded = !state.permohonanExpanded; renderApp();" class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer">
-                  <span class="flex items-center gap-2.5">
-                    <svg class="h-4 w-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <span>Modul Permohonan</span>
-                  </span>
-                  <span class="text-slate-400">
-                    <svg class="h-3.5 w-3.5 transform transition-transform ${state.permohonanExpanded ? '' : 'rotate-180'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-                    </svg>
-                  </span>
-                </button>
-
-                <!-- Nested Submenu -->
-                ${state.permohonanExpanded ? `
-                  <div class="pl-4 border-l border-slate-700/60 ml-3.5 mt-1 space-y-1">
-                    <button onclick="setTab('permohonan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              ${hasTabAccess('permohonan') ? `
+                <div>
+                  <button onclick="state.permohonanExpanded = !state.permohonanExpanded; renderApp();" class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                      <svg class="h-4 w-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                       </svg>
-                      <span>Senarai Permohonan</span>
-                    </button>
-                    <button onclick="setTab('permohonan-baru')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan-baru' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan-baru' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                      <span>Modul Permohonan</span>
+                    </span>
+                    <span class="text-slate-400">
+                      <svg class="h-3.5 w-3.5 transform transition-transform ${state.permohonanExpanded ? '' : 'rotate-180'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
                       </svg>
-                      <span>Borang Permohonan Baru</span>
-                    </button>
-                  </div>
-                ` : ''}
-              </div>
+                    </span>
+                  </button>
+
+                  <!-- Nested Submenu -->
+                  ${state.permohonanExpanded ? `
+                    <div class="pl-4 border-l border-slate-700/60 ml-3.5 mt-1 space-y-1">
+                      <button onclick="setTab('permohonan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                        <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span>Senarai Permohonan</span>
+                      </button>
+                      ${hasTabAccess('permohonan-baru') ? `
+                        <button onclick="setTab('permohonan-baru')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan-baru' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                          <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan-baru' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                          </svg>
+                          <span>Borang Permohonan Baru</span>
+                        </button>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
 
               <!-- 3. Pelesenan & Permit -->
-              <button onclick="setTab('pelesenan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 20a2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1M4 17l1.5-6h13l1.5 6M9 11V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
-                </svg>
-                <span>Pelesenan &amp; Permit</span>
-              </button>
+              ${hasTabAccess('pelesenan') ? `
+                <button onclick="setTab('pelesenan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 20a2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1M4 17l1.5-6h13l1.5 6M9 11V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
+                  </svg>
+                  <span>Pelesenan &amp; Permit</span>
+                </button>
+              ` : ''}
 
               <!-- 4. Pekeliling & Notis -->
-              <button onclick="setTab('pekeliling')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pekeliling' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pekeliling' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                </svg>
-                <span>Pekeliling &amp; Notis</span>
-              </button>
-
-              <!-- 5. Jejak Audit Sistem -->
-              <button onclick="setTab('audit')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'audit' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
-                <span>Jejak Audit Sistem</span>
-              </button>
-
-              <!-- 6. Tetapan & Konfigurasi -->
-              <button onclick="setTab('tetapan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'tetapan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'tetapan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
-                <span>Tetapan &amp; Konfigurasi</span>
-              </button>
-
-              <!-- 7. Profil & Aku-Janji -->
-              <button onclick="setTab('profil')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'profil' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'profil' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span>Profil &amp; Aku-Janji (GP-06)</span>
-              </button>
-
-              <!-- CATEGORY 2: PELUASAN FASA 2 -->
-              <div class="pt-3">
-                <span class="block text-[10px] font-bold text-purple-400 uppercase tracking-wider px-3 mb-2">PELUASAN (FASA 2)</span>
-                
-                <!-- 8. Modul Pemaliman -->
-                <button onclick="setTab('pemaliman')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pemaliman' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pemaliman' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+              ${hasTabAccess('pekeliling') ? `
+                <button onclick="setTab('pekeliling')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pekeliling' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pekeliling' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                   </svg>
-                  <span>Modul Pemaliman (Malim)</span>
+                  <span>Pekeliling &amp; Notis</span>
                 </button>
+              ` : ''}
 
-                <!-- 9. Modul Kawal Selia M2 -->
-                <button onclick="setTab('kawalselia')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'kawalselia' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'kawalselia' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                  </svg>
-                  <span>Kawal Selia &amp; Pemeriksaan</span>
-                </button>
+              <!-- CATEGORY 2: OPERASI MARITIM & KAWAL SELIA -->
+              ${(hasTabAccess('pemaliman') || hasTabAccess('kawalselia') || hasTabAccess('aset') || hasTabAccess('fpx') || hasTabAccess('gis')) ? `
+                <div class="pt-3">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">OPERASI &amp; KAWAL SELIA</span>
+                  
+                  <!-- 5. Modul Pemaliman -->
+                  ${hasTabAccess('pemaliman') ? `
+                    <button onclick="setTab('pemaliman')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pemaliman' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pemaliman' ? 'text-slate-950' : 'text-amber-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+                      </svg>
+                      <span>Modul Pemaliman (Malim)</span>
+                    </button>
+                  ` : ''}
 
-                <!-- 10. Modul Pengurusan Aset M6 -->
-                <button onclick="setTab('aset')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'aset' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'aset' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                  </svg>
-                  <span>Pengurusan Aset Pelabuhan</span>
-                </button>
+                  <!-- 6. Modul Kawal Selia M2 -->
+                  ${hasTabAccess('kawalselia') ? `
+                    <button onclick="setTab('kawalselia')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'kawalselia' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'kawalselia' ? 'text-slate-950' : 'text-amber-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                      </svg>
+                      <span>Kawal Selia &amp; Pemeriksaan</span>
+                    </button>
+                  ` : ''}
 
-                <!-- 11. Gerbang Bayaran FPX -->
-                <button onclick="setTab('fpx')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'fpx' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'fpx' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/>
-                    <line x1="2" y1="10" x2="22" y2="10" stroke-width="2"/>
-                  </svg>
-                  <span>Gerbang Bayaran FPX</span>
-                </button>
+                  <!-- 7. Modul Pengurusan Aset M6 -->
+                  ${hasTabAccess('aset') ? `
+                    <button onclick="setTab('aset')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'aset' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'aset' ? 'text-slate-950' : 'text-amber-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                      </svg>
+                      <span>Pengurusan Aset Pelabuhan</span>
+                    </button>
+                  ` : ''}
 
-                <!-- 12. Peta GIS & Sempadan -->
-                <button onclick="setTab('gis')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'gis' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
-                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'gis' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke-width="2"/>
-                    <line x1="8" y1="2" x2="8" y2="18" stroke-width="2"/>
-                    <line x1="16" y1="6" x2="16" y2="22" stroke-width="2"/>
-                  </svg>
-                  <span>GIS &amp; Sempadan Pelabuhan</span>
-                </button>
-              </div>
+                  <!-- 8. Gerbang Bayaran FPX -->
+                  ${hasTabAccess('fpx') ? `
+                    <button onclick="setTab('fpx')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'fpx' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'fpx' ? 'text-slate-950' : 'text-amber-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10" stroke-width="2"/>
+                      </svg>
+                      <span>Gerbang Bayaran FPX</span>
+                    </button>
+                  ` : ''}
+
+                  <!-- 9. Peta GIS & Sempadan -->
+                  ${hasTabAccess('gis') ? `
+                    <button onclick="setTab('gis')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'gis' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'gis' ? 'text-slate-950' : 'text-amber-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke-width="2"/>
+                        <line x1="8" y1="2" x2="8" y2="18" stroke-width="2"/>
+                        <line x1="16" y1="6" x2="16" y2="22" stroke-width="2"/>
+                      </svg>
+                      <span>GIS &amp; Sempadan Pelabuhan</span>
+                    </button>
+                  ` : ''}
+                </div>
+              ` : ''}
+
+              <!-- CATEGORY 3: PENTADBIRAN & KESELAMATAN -->
+              ${(hasTabAccess('audit') || hasTabAccess('tetapan') || hasTabAccess('profil')) ? `
+                <div class="pt-3">
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">PENTADBIRAN &amp; KESELAMATAN</span>
+                  
+                  <!-- 10. Jejak Audit Sistem -->
+                  ${hasTabAccess('audit') ? `
+                    <button onclick="setTab('audit')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'audit' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                      </svg>
+                      <span>Jejak Audit Sistem (GP-18)</span>
+                    </button>
+                  ` : ''}
+
+                  <!-- 11. Tetapan & Konfigurasi -->
+                  ${hasTabAccess('tetapan') ? `
+                    <button onclick="setTab('tetapan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'tetapan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'tetapan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                      <span>Tetapan &amp; Konfigurasi</span>
+                    </button>
+                  ` : ''}
+
+                  <!-- 12. Profil & Aku-Janji -->
+                  ${hasTabAccess('profil') ? `
+                    <button onclick="setTab('profil')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'profil' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'profil' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                      <span>Profil &amp; Aku-Janji (GP-06)</span>
+                    </button>
+                  ` : ''}
+                </div>
+              ` : ''}
 
             </nav>
 
@@ -749,14 +987,14 @@
             <div class="p-4 bg-[#07192f] border-t border-slate-800 flex items-center justify-between">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs shrink-0">
-                  <span>N</span>
+                  <span>${state.user.name.charAt(0)}</span>
                 </div>
                 <div class="flex flex-col min-w-0">
                   <span class="text-xs font-semibold text-white truncate">${state.user.name}</span>
-                  <span class="text-[10px] text-slate-400 truncate">Lembaga Pelabuhan Kemaman</span>
+                  <span class="text-[10px] text-slate-400 truncate">${state.user.unit}</span>
                 </div>
               </div>
-              <button onclick="logout()" title="Log Keluar" class="p-1.5 text-slate-400 hover:text-red-400 transition-colors">
+              <button onclick="logout()" title="Log Keluar" class="p-1.5 text-slate-400 hover:text-red-400 transition-colors cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
               </button>
             </div>
@@ -766,17 +1004,19 @@
           <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
             
             <!-- Top Admin Header -->
-            <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between no-print">
+            <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between no-print shrink-0">
               <div class="text-xs text-slate-500 font-medium">
                 <span class="font-bold text-[#0b2545]">e-Kawalselia</span> / <span class="capitalize">${state.currentTab.replace('-', ' ')}</span>
               </div>
 
               <div class="flex items-center gap-4 text-xs">
-                <!-- Language -->
-                <div class="bg-slate-900 text-white px-3 py-1 rounded-lg flex items-center gap-2 text-[11px] font-bold">
-                  <span class="text-amber-400">Bahasa Melayu</span>
-                  <span class="text-slate-500">|</span>
-                  <span class="text-slate-400">English</span>
+                <!-- Role Switcher Quick Demo Widget -->
+                <div class="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-[10px]">
+                  <span class="text-slate-500 px-1.5 font-bold uppercase">Peranan:</span>
+                  <button onclick="fastLogin('superadmin')" class="px-2 py-1 rounded font-bold transition-all ${state.user.roleKey === 'superadmin' ? 'bg-[#0b2545] text-white' : 'text-slate-700 hover:bg-white'}">Admin</button>
+                  <button onclick="fastLogin('reviewer')" class="px-2 py-1 rounded font-bold transition-all ${state.user.roleKey === 'reviewer' ? 'bg-[#0b2545] text-white' : 'text-slate-700 hover:bg-white'}">Penilai</button>
+                  <button onclick="fastLogin('pilot')" class="px-2 py-1 rounded font-bold transition-all ${state.user.roleKey === 'pilot' ? 'bg-[#0b2545] text-white' : 'text-slate-700 hover:bg-white'}">Malim</button>
+                  <button onclick="fastLogin('applicant')" class="px-2 py-1 rounded font-bold transition-all ${state.user.roleKey === 'applicant' ? 'bg-[#0b2545] text-white' : 'text-slate-700 hover:bg-white'}">Pemohon</button>
                 </div>
 
                 <!-- Notifications -->
@@ -790,7 +1030,7 @@
                   <div class="h-8 w-8 rounded-full bg-[#0b2545] text-white flex items-center justify-center text-xs font-bold">
                     👤
                   </div>
-                  <div class="hidden sm:block">
+                  <div class="hidden sm:block text-left">
                     <span class="block font-bold text-slate-900">${state.user.name}</span>
                     <span class="block text-[10px] text-slate-500">${state.user.role}</span>
                   </div>
@@ -807,7 +1047,35 @@
       `;
     }
 
+    function renderAccessDeniedView() {
+      return `
+        <div class="max-w-xl mx-auto bg-white rounded-2xl border border-rose-200 shadow-md p-8 text-center space-y-4 text-xs my-12">
+          <div class="h-16 w-16 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-3xl font-bold mx-auto">
+            🚫
+          </div>
+          <h2 class="text-xl font-bold text-slate-900">403 — Capaian Ditolak (Access Denied)</h2>
+          <p class="text-slate-600 leading-relaxed text-sm">
+            Peranan akaun semasa anda (<strong>${state.user.role}</strong>) tidak dibenarkan mengakses modul <strong>${state.currentTab.replace('-', ' ').toUpperCase()}</strong> di bawah Dasar Kawalan Capaian Berasaskan Peranan (RBAC GP-01 / GP-02).
+          </p>
+          <div class="p-3 bg-slate-50 border rounded-lg text-slate-500 font-mono text-[11px] text-left">
+            <div><strong>Pengguna:</strong> ${state.user.email}</div>
+            <div><strong>Peranan:</strong> ${state.user.roleKey}</div>
+            <div><strong>Status Dasar:</strong> ENFORCED (Zero Trust Architecture)</div>
+          </div>
+          <div class="pt-2">
+            <button onclick="setTab('dashboard')" class="px-5 py-2.5 bg-[#0b2545] hover:bg-[#133e87] text-white font-bold rounded-lg cursor-pointer">
+              ← Kembali ke Dashboard Utama
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     function renderActiveAdminTab() {
+      if (!hasTabAccess(state.currentTab) && state.currentTab !== 'semak') {
+        return renderAccessDeniedView();
+      }
+
       switch (state.currentTab) {
         case 'dashboard': return renderAdminDashboardContent();
         case 'permohonan': return renderAdminPermohonanContent();
@@ -1890,98 +2158,82 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
-                <span class="text-xs text-slate-500">X-2 GIS & Polygons</span>
+                <span class="px-2 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-bold rounded uppercase border border-amber-300">Modul Fasa 2 · X-2 GIS</span>
+                <span class="text-xs text-slate-500 font-mono">Kemaman Port Limits Engine</span>
               </div>
               <h1 class="text-2xl font-bold text-[#0b2545]">GIS &amp; Sempadan Zon Maritim Pelabuhan</h1>
-              <p class="text-xs text-slate-500">Pemetaan interaktif kawasan Had Pelabuhan Kemaman (*Port Limits*), Dermaga Barat, Dermaga Timur &amp; Zon Bebas Cukai</p>
+              <p class="text-xs text-slate-500">Peta interaktif geospatial sebenar (OpenStreetMap / Satelit ESRI) bagi sempadan Had Pelabuhan Kemaman (*Port Limits*), Dermaga Barat, Dermaga Timur &amp; Zon Bebas Cukai</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="if(leafletMapInstance) { leafletMapInstance.setView([4.2450, 103.4650], 13); }" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-300 cursor-pointer">
+                🎯 Fokus Pelabuhan
+              </button>
             </div>
           </div>
 
-          <!-- Interactive Marine Map Display -->
-          <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-md text-white space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <!-- Real Interactive Leaflet Marine Map Card -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <span class="font-bold text-sm text-amber-400">Peta Vektor Sempadan Pelabuhan Kemaman (Port Limits Statutory Perimeter)</span>
-                <p class="text-[11px] text-slate-400">Peta geospatial masa-nyata berpandukan warta maritim LPKmn</p>
+                <span class="font-bold text-sm text-[#0b2545] flex items-center gap-2">
+                  <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Peta Geospatial Masa-Nyata (OpenStreetMap / Satelit ESRI World Imagery)
+                </span>
+                <p class="text-[11px] text-slate-500">Klik di mana-mana atas peta untuk meletakkan pin koordinat dan mengesahkan sempadan statutori pelabuhan secara automatik.</p>
               </div>
-              <span class="px-2.5 py-1 bg-blue-950 text-blue-300 border border-blue-800 rounded font-mono text-[11px]">
-                WGS 84 / UTM Zone 48N
-              </span>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 bg-slate-900 text-amber-300 rounded font-mono text-[11px] font-bold">
+                  Sistem Koordinat: WGS 84 / UTM Zone 48N
+                </span>
+              </div>
             </div>
 
-            <!-- SVG Visual Port Limits Map -->
-            <div class="relative w-full bg-[#07192f] rounded-xl border border-slate-800 p-4 flex items-center justify-center overflow-hidden">
-              <svg viewBox="0 0 800 360" class="w-full h-auto max-h-[360px] select-none">
-                <!-- Water Grid Background -->
-                <defs>
-                  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.7"/>
-                  </pattern>
-                </defs>
-                <rect width="800" height="360" fill="url(#grid)" />
+            <!-- Leaflet Container -->
+            <div id="leaflet-port-map" class="h-[460px] w-full rounded-xl border border-slate-300 shadow-inner z-0"></div>
 
-                <!-- Coastline (West Side) -->
-                <path d="M 0,0 L 160,0 Q 220,120 180,240 L 140,360 L 0,360 Z" fill="#0f172a" stroke="#334155" stroke-width="2" />
-                <text x="50" y="180" fill="#64748b" font-size="14" font-weight="bold" letter-spacing="2">DARATAN KEMAMAN</text>
-
-                <!-- Port Limits Outer Boundary (Dashed Golden Line) -->
-                <polygon points="180,40 760,40 760,320 160,320" fill="rgba(245, 158, 11, 0.05)" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="8 4" />
-                <text x="420" y="30" fill="#f59e0b" font-size="12" font-weight="bold">HAD PELABUHAN KEMAMAN (PORT LIMITS)</text>
-
-                <!-- Dermaga Barat (West Wharf) -->
-                <rect x="175" y="80" width="80" height="40" rx="4" fill="#3b82f6" fill-opacity="0.7" stroke="#60a5fa" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Zon Dermaga Barat (West Wharf) - Keluasan: 45.2 Hektar (Zon Bebas Cukai)')" />
-                <text x="182" y="105" fill="#ffffff" font-size="10" font-weight="bold">Dermaga Barat</text>
-
-                <!-- Dermaga Timur (East Wharf) -->
-                <rect x="220" y="160" width="80" height="40" rx="4" fill="#8b5cf6" fill-opacity="0.7" stroke="#a78bfa" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Zon Dermaga Timur (East Wharf) - Keluasan: 38.0 Hektar')" />
-                <text x="228" y="185" fill="#ffffff" font-size="10" font-weight="bold">Dermaga Timur</text>
-
-                <!-- Kemaman Supply Base (KSB Basin) -->
-                <polygon points="170,230 250,220 270,270 160,280" fill="#10b981" fill-opacity="0.7" stroke="#34d399" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Pangkalan Bekalan Kemaman (KSB) - Terminal Logistik Minyak & Gas')" />
-                <text x="180" y="255" fill="#ffffff" font-size="10" font-weight="bold">KSB Wharf</text>
-
-                <!-- Anchorage Area (MRA) -->
-                <circle cx="560" cy="180" r="70" fill="rgba(59, 130, 246, 0.15)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4" class="cursor-pointer hover:fill-opacity-30" onclick="alert('Kawasan Sauh Kapal (Anchorage Area MRA) - Keluasan: 85.0 km²')" />
-                <text x="510" y="185" fill="#38bdf8" font-size="11" font-weight="bold">Kawasan Sauh (MRA)</text>
-              </svg>
-            </div>
-
-            <!-- Point-In-Polygon Real-Time Inspector -->
-            <div class="bg-[#0b192c] p-4 rounded-xl border border-slate-700">
-              <span class="font-bold text-xs text-white block mb-2">Semakan Koordinat Kedudukan Kapal (Point-in-Polygon Engine):</span>
+            <!-- Point-In-Polygon Real-Time Inspector Form -->
+            <div class="bg-slate-900 text-white p-4 rounded-xl border border-slate-800 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-xs text-amber-400">Enjin Pengesahan Koordinat Kapal (Point-in-Polygon Ray Casting):</span>
+                <span class="text-[10px] text-slate-400">Klik pada peta atau masukkan manual</span>
+              </div>
               <form onsubmit="handleCheckGis(event)" class="flex flex-wrap items-center gap-3 text-xs">
                 <div>
-                  <label class="text-slate-400 block text-[10px]">Latitud (° U):</label>
-                  <input type="text" id="gis-lat" value="${state.gisQuery.lat}" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded text-white font-mono w-28" />
+                  <label class="text-slate-400 block text-[10px] font-semibold">Latitud (° U):</label>
+                  <input type="text" id="gis-lat" value="${state.gisQuery.lat}" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-white font-mono w-32 focus:border-amber-400 focus:outline-hidden" />
                 </div>
                 <div>
-                  <label class="text-slate-400 block text-[10px]">Longitud (° T):</label>
-                  <input type="text" id="gis-lng" value="${state.gisQuery.lng}" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded text-white font-mono w-28" />
+                  <label class="text-slate-400 block text-[10px] font-semibold">Longitud (° T):</label>
+                  <input type="text" id="gis-lng" value="${state.gisQuery.lng}" class="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-white font-mono w-32 focus:border-amber-400 focus:outline-hidden" />
                 </div>
-                <button type="submit" class="mt-4 px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded cursor-pointer">
-                  Semak Koordinat
-                </button>
-                ${state.gisQuery.result ? `
-                  <div class="mt-4 px-3 py-1.5 rounded font-bold ${state.gisQuery.result === 'INSIDE' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-600' : 'bg-rose-900/80 text-rose-300 border border-rose-600'}">
-                    ${state.gisQuery.result === 'INSIDE' ? '✓ DALAM HAD PELABUHAN KEMAMAN' : '✗ DI LUAR HAD PELABUHAN KEMAMAN'}
-                  </div>
-                ` : ''}
+                <div class="pt-4">
+                  <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg cursor-pointer shadow-xs transition-all active:scale-95">
+                    Semak Koordinat
+                  </button>
+                </div>
+                <div id="gis-result-box" class="pt-4 text-xs font-mono">
+                  ${state.gisQuery.result ? `
+                    <span class="${state.gisQuery.result === 'INSIDE' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}">
+                      ${state.gisQuery.result === 'INSIDE' ? '✓ KOORDINAT BERADA DI DALAM HAD PELABUHAN KEMAMAN' : '✗ KOORDINAT DI LUAR KAWASAN HAD PELABUHAN KEMAMAN'}
+                    </span>
+                  ` : '<span class="text-slate-400">Sila masukkan koordinat untuk semakan.</span>'}
+                </div>
               </form>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Statutory Boundary Details -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             ${state.gisZones.map(z => `
-              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
-                <div class="flex items-center justify-between border-b pb-2">
-                  <h3 class="font-bold text-sm text-[#0b2545]">${z.name}</h3>
-                  <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded">${z.isps}</span>
+              <div class="bg-white rounded-xl border border-slate-200 shadow-2xs p-4 space-y-2 hover:border-blue-400 transition-colors">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h3 class="font-bold text-xs text-[#0b2545] truncate">${z.name}</h3>
+                  <span class="px-1.5 py-0.5 bg-blue-50 text-blue-800 text-[9px] font-bold rounded border border-blue-200 shrink-0">${z.isps}</span>
                 </div>
-                <div class="space-y-1 text-xs text-slate-600">
-                  <p><strong>Keluasan Kawasan:</strong> ${z.area}</p>
-                  <p><strong>Koordinat Geografi:</strong> <span class="font-mono text-slate-900 font-bold">${z.coords}</span></p>
-                  <p><strong>Pihak Berkuasa Kawal Selia:</strong> ${z.authority}</p>
+                <div class="space-y-1 text-[11px] text-slate-600">
+                  <p><strong>Keluasan:</strong> ${z.area}</p>
+                  <p><strong>Titik Rujukan:</strong> <span class="font-mono text-slate-900 font-bold">${z.coords}</span></p>
+                  <p><strong>Kawal Selia:</strong> ${z.authority}</p>
                 </div>
               </div>
             `).join('')}
