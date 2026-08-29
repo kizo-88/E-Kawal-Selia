@@ -34,13 +34,19 @@ export const metadata: Metadata = {
 // config engine lands in Stage 2 (task 2.1).
 const DEFAULT_LOCALE = 'ms'
 
+import { FirebaseAnalytics } from '../components/layout/firebase-analytics'
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang={DEFAULT_LOCALE}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <FirebaseAnalytics />
+        {children}
+      </body>
     </html>
   )
 }
+
