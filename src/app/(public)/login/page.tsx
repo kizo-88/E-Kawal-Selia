@@ -53,11 +53,12 @@ export default function LoginPage() {
           <p>
             Perlukan bantuan teknikal segera? Hubungi{' '}
             <a
-              href="mailto:kawalselia@lpktg.gov.my"
+              href="mailto:kawalselia@lpkmn.gov.my"
               className="text-[#0b2545] font-semibold hover:underline"
             >
-              kawalselia@lpktg.gov.my
+              kawalselia@lpkmn.gov.my
             </a>
+
           </p>
           <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
             <Link href="/dasar-privasi" className="hover:text-slate-600">

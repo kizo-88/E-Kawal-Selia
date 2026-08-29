@@ -120,11 +120,12 @@ export default function DasarPrivasiPage() {
             Sebarang pertanyaan, aduan, atau permintaan mengenai dasar privasi ini boleh dikemukakan
             kepada Unit IT &amp; Integriti Lembaga Pelabuhan Kemaman melalui emel{' '}
             <a
-              href="mailto:kawalselia@lpktg.gov.my"
+              href="mailto:kawalselia@lpkmn.gov.my"
               className="text-[#0b2545] font-semibold hover:underline"
             >
-              kawalselia@lpktg.gov.my
+              kawalselia@lpkmn.gov.my
             </a>
+
             .
           </p>
         </div>

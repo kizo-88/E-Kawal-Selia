@@ -37,10 +37,11 @@ export const LPKMN_ORG_INFO: OrganisationInfo = {
   stateCode: 'Terengganu Darul Iman',
   coordinates: '4.2486° N, 103.4567° E',
   phone: '+609-863 1590 / 1591',
-  email: 'kawalselia@lpktg.gov.my',
-  website: 'https://www.lpktg.gov.my',
+  email: 'kawalselia@lpkmn.gov.my',
+  website: 'https://www.lpkmn.gov.my/',
   goLiveYear: 2026,
 }
+
 
 export function PublicFooter() {
   return (
@@ -169,7 +170,7 @@ export function PublicFooter() {
               </li>
               <li>
                 <a
-                  href="https://www.lpktg.gov.my"
+                  href="https://www.lpkmn.gov.my/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-amber-400 transition-colors flex items-center gap-1.5"
@@ -178,6 +179,7 @@ export function PublicFooter() {
                   <IconExternalLink className="h-3 w-3" />
                 </a>
               </li>
+
             </ul>
           </div>
         </div>

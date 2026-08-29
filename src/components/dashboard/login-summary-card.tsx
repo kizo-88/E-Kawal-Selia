@@ -18,7 +18,8 @@ export function LoginSummaryCard({
   sessionExpiresInMinutes = 10,
   mfaEnabled = true,
   userName = 'En. Ahmad Zulkifli (Pegawai Penilai)',
-  userEmail = 'ahmad.zulkifli@lpktg.gov.my',
+  userEmail = 'ahmad.zulkifli@lpkmn.gov.my',
+
   className = '',
 }: LoginSummaryCardProps) {
   return (

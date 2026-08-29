@@ -138,7 +138,8 @@ export default function BantuanPage() {
                 <IconMail className="h-4 w-4 text-[#0b2545]" />
                 <span>E-mel Sokongan Teknikal</span>
               </div>
-              <p>kawalselia@lpktg.gov.my</p>
+              <p>kawalselia@lpkmn.gov.my</p>
+
               <p className="text-slate-500 text-[11px]">
                 Maklum balas dalam tempoh 1 hari bekerja
               </p>

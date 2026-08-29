@@ -22,10 +22,11 @@ describe('Design System & UI Components (GP-21, GP-22, GP-08, GP-23)', () => {
     })
 
     it('contains official secretariat and contact info', () => {
-      expect(LPKMN_ORG_INFO.email).toBe('kawalselia@lpktg.gov.my')
+      expect(LPKMN_ORG_INFO.email).toBe('kawalselia@lpkmn.gov.my')
       expect(LPKMN_ORG_INFO.phone).toContain('863 1590')
-      expect(LPKMN_ORG_INFO.website).toContain('lpktg.gov.my')
+      expect(LPKMN_ORG_INFO.website).toBe('https://www.lpkmn.gov.my/')
     })
+
   })
 
   describe('Announcements & Content Panel (GP-21, GP-17)', () => {

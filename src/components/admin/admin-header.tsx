@@ -175,7 +175,8 @@ export function AdminHeader({
               <div className="px-4 py-2 border-b border-slate-100">
                 <p className="text-xs font-bold text-slate-900">Akaun Berdaftar</p>
                 <p className="text-[11px] text-slate-500 truncate">
-                  pegawai@lpktg.gov.my
+                  pegawai@lpkmn.gov.my
+
                 </p>
               </div>
               <Link

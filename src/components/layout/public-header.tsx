@@ -14,12 +14,18 @@ export function PublicHeader() {
       {/* Top Government Bar */}
       <div className="bg-[#0b2545] text-slate-100 text-xs py-1.5 px-4 sm:px-8 border-b border-[#133e87]">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <a
+            href="https://www.lpkmn.gov.my/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 hover:text-amber-300 transition-colors cursor-pointer"
+            title="Layari Portal Rasmi Lembaga Pelabuhan Kemaman (https://www.lpkmn.gov.my/)"
+          >
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" aria-hidden="true" />
             <span className="font-medium tracking-wide">
-              Portal Rasmi Lembaga Pelabuhan Kemaman (LPKmn)
+              Portal Rasmi Lembaga Pelabuhan Kemaman (LPKmn) ↗
             </span>
-          </div>
+          </a>
           <div className="flex items-center gap-4 text-[11px] text-slate-300">
             <span className="hidden sm:inline">Kementerian Pengangkutan Malaysia</span>
             <span className="hidden md:inline">|</span>
@@ -27,6 +33,7 @@ export function PublicHeader() {
           </div>
         </div>
       </div>
+
 
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
