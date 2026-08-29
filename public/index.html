@@ -60,12 +60,16 @@
         name: 'Pegawai LPKmn',
         role: 'Pentadbir Sistem (Super Admin)',
         roleKey: 'superadmin',
-        email: 'admin@lpkmn.gov.my'
+        email: 'admin@lpkmn.gov.my',
+        unit: 'Unit IT, Bahagian Korporat & Pembangunan',
+        phone: '+609-863 1000'
       },
-      currentTab: 'home', // 'home' | 'dashboard' | 'permohonan' | 'permohonan-baru' | 'pelesenan' | 'certificate' | 'semak' | 'pekeliling' | 'audit' | 'profil'
+      currentTab: 'home', 
       permohonanExpanded: true,
+      phase2Expanded: true,
       selectedLicenceId: '1',
       semakToken: '7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4',
+      filterKeyword: '',
       applications: [
         {
           id: '1',
@@ -106,6 +110,38 @@
           validUntil: '27 Ogos 2027',
           qrToken: '9a8b7c6d5e4f3a2b'
         }
+      ],
+      auditLogs: [
+        { id: '101', time: '14:02:15', date: '29 Ogos 2026', action: 'PENGGUNA_LOG_MASUK', desc: 'Pentadbir Sistem (admin@lpkmn.gov.my) berjaya mengesahkan log masuk portal dengan MFA.', ip: '10.24.18.9', user: 'admin@lpkmn.gov.my' },
+        { id: '102', time: '13:58:40', date: '29 Ogos 2026', action: 'SIJIL_LESEN_DIJANA', desc: 'Sijil Rasmi LPK/LPS/2026/00142 dijana dan dimeterai dengan Token QR ISO 18004.', ip: '10.24.18.9', user: 'admin@lpkmn.gov.my' },
+        { id: '103', time: '13:45:10', date: '29 Ogos 2026', action: 'KOD_QR_DIIMBAS', desc: 'Imbasan Kod QR Awam token 7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4 berjaya disahkan untuk Kemaman Supply Base.', ip: '175.143.12.88', user: 'AWAM' },
+        { id: '104', time: '12:30:22', date: '29 Ogos 2026', action: 'TETAPAN_DIKEMASKINI', desc: 'Dasar tamat sesi sekuriti 10 minit dan had cubaan kunci 3x disahkan mematuhi GP-03.', ip: '10.24.18.9', user: 'admin@lpkmn.gov.my' },
+        { id: '105', time: '11:15:05', date: '29 Ogos 2026', action: 'AKU_JANJI_DISAHKAN', desc: 'Surat Aku-Janji Integriti GP-06 diperakui sah oleh pemohon Kemaman Supply Base Sdn. Bhd.', ip: '115.132.8.44', user: 'user@kemamansupply.com.my' }
+      ],
+      pilots: [
+        { id: '1', name: 'Kapt. Wan Azmi Wan Ismail', licenceNo: 'LPK/MALIM/2024/008', grade: 'Malim Kanan (Gred A - Tanpa Had Saiz)', status: 'Berkuat Kuasa', vesselCount: '1,420 Pergerakan', expiry: '14 Nov 2027', certType: 'Lesen Malim Pelabuhan Kemaman' },
+        { id: '2', name: 'Kapt. Mohd Radzi Bin Abdullah', licenceNo: 'LPK/MALIM/2025/019', grade: 'Malim Kelas 1 (Kapal sehingga 50,000 DWT)', status: 'Berkuat Kuasa', vesselCount: '890 Pergerakan', expiry: '02 Feb 2028', certType: 'Lesen Malim Pelabuhan Kemaman' },
+        { id: '3', name: 'Kapt. Jonathan Tan Hock Seng', licenceNo: 'LPK/PEC/2026/003', grade: 'Sijil Pengecualian Malim (PEC - Kapal Tangki LNG)', status: 'Berkuat Kuasa', vesselCount: '340 Pergerakan', expiry: '30 Dis 2026', certType: 'Sijil Pengecualian Malim (PEC)' }
+      ],
+      inspections: [
+        { id: '1', refNo: 'INS/2026/089', site: 'Dermaga Barat (Zon Bebas Pelabuhan Kemaman)', officer: 'En. Roslan (M/T)', date: '02 Sept 2026', type: 'Pemeriksaan Keselamatan Kod ISPS', status: 'Dijadualkan', carCount: 0 },
+        { id: '2', refNo: 'INS/2026/084', site: 'Kemaman Supply Base (Kemudahan Bunkering)', officer: 'En. Fairuz (Unit Marin)', date: '25 Ogos 2026', type: 'Audit Pematuhan Pencemaran Minyak', status: 'Selesai & Patuh', carCount: 0 },
+        { id: '3', refNo: 'INS/2026/078', site: 'Jeti Tangki Minyak Teluk Kalong', officer: 'Kapt. Zulkifli (OKS)', date: '12 Ogos 2026', type: 'Pemeriksaan Peralatan Kebakaran Maritim', status: 'CAR Dikeluarkan', carCount: 2 }
+      ],
+      assets: [
+        { id: '1', code: 'AST-LPK-001', name: 'Bot Tunda Kawalan Pelabuhan (Kuantan 1)', category: 'Vessel / Bot Keselamatan', status: 'Beroperasi', location: 'Pangkalan Marin LPKmn', condition: 'Cemerlang (98%)' },
+        { id: '2', code: 'AST-LPK-014', name: 'Oil Boom Containment Maritim (500 Meter)', category: 'Peralatan Kawalan Tumpahan', status: 'Tersedia Untuk Pinjaman', location: 'Gudang Keselamatan B', condition: 'Sedia Guna' },
+        { id: '3', code: 'AST-LPK-029', name: 'Sistem VHF Marine Radio Coastal Station (Ch 16/12)', category: 'Telekomunikasi Trafik VTS', status: 'Beroperasi 24/7', location: 'Menara Kawalan Marin', condition: 'Aktif' }
+      ],
+      fpxTransactions: [
+        { ref: 'FPX-2026-9901', appRef: 'LPK/LPS/2026/00142', payer: 'Kemaman Supply Base Sdn. Bhd.', bank: 'Maybank2u', amount: 'RM 2,500.00', status: 'Berjaya', date: '24 Ogos 2026', receiptNo: 'RESIT-LPK-2026-0811' },
+        { ref: 'FPX-2026-9902', appRef: 'LPK/PAP/2026/00065', payer: 'Teluk Kalong Marine Services', bank: 'CIMB Clicks', amount: 'RM 1,200.00', status: 'Berjaya', date: '18 Ogos 2026', receiptNo: 'RESIT-LPK-2026-0798' }
+      ],
+      gisZones: [
+        { name: 'Had Pelabuhan Kemaman (Port Limits Area)', area: '128.4 km²', coords: "04° 15.0' N, 103° 28.0' E", isps: 'Level 1', authority: 'Lembaga Pelabuhan Kemaman' },
+        { name: 'Zon Dermaga Barat (West Wharf)', area: '45.2 Hektar', coords: "04° 14.8' N, 103° 27.5' E", isps: 'Level 1 (Zon Bebas Cukai)', authority: 'Konsortium Pelabuhan Kemaman' },
+        { name: 'Zon Dermaga Timur (East Wharf)', area: '38.0 Hektar', coords: "04° 14.5' N, 103° 28.2' E", isps: 'Level 1', authority: 'Konsortium Pelabuhan Kemaman' },
+        { name: 'Kawasan Sauh Kapal (Anchorage Area MRA)', area: '85.0 km²', coords: "04° 16.0' N, 103° 32.0' E", isps: 'Level 1', authority: 'Unit Marin & Trafik LPKmn' }
       ]
     };
 
@@ -119,11 +155,13 @@
 
     function fastLogin(roleKey) {
       if (roleKey === 'superadmin') {
-        state.user = { name: 'Pegawai LPKmn', role: 'Pentadbir Sistem (Super Admin)', roleKey: 'superadmin', email: 'admin@lpkmn.gov.my' };
+        state.user = { name: 'Pegawai LPKmn', role: 'Pentadbir Sistem (Super Admin)', roleKey: 'superadmin', email: 'admin@lpkmn.gov.my', unit: 'Unit IT, Bahagian Korporat & Pembangunan', phone: '+609-863 1000' };
       } else if (roleKey === 'reviewer') {
-        state.user = { name: 'En. Ahmad Zulkifli', role: 'Pegawai Penilai (M/T)', roleKey: 'reviewer', email: 'reviewer@lpkmn.gov.my' };
+        state.user = { name: 'En. Ahmad Zulkifli', role: 'Pegawai Penilai (M/T)', roleKey: 'reviewer', email: 'reviewer@lpkmn.gov.my', unit: 'Unit Marin & Trafik', phone: '+609-863 1022' };
+      } else if (roleKey === 'pilot') {
+        state.user = { name: 'Kapt. Wan Azmi Wan Ismail', role: 'Malim Kanan Berlesen', roleKey: 'pilot', email: 'pilot.wan@kemamanpilot.com.my', unit: 'Perkhidmatan Pemaliman Pelabuhan', phone: '+6019-988 2341' };
       } else {
-        state.user = { name: 'Tn. Syed Farhan', role: 'Pemohon Syarikat', roleKey: 'applicant', email: 'user@kemamansupply.com.my' };
+        state.user = { name: 'Tn. Syed Farhan', role: 'Pemohon Syarikat', roleKey: 'applicant', email: 'user@kemamansupply.com.my', unit: 'Kemaman Supply Base Sdn. Bhd.', phone: '+609-863 1590' };
       }
       state.isLoggedIn = true;
       state.currentTab = 'dashboard';
@@ -140,6 +178,27 @@
     function generateQrSvg(text, size = 148) {
       const encodedUrl = encodeURIComponent(text);
       return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedUrl}&margin=4" width="${size}" height="${size}" alt="Kod QR Sijil LPKmn" class="rounded bg-white p-1 shadow-xs border border-slate-200 block" />`;
+    }
+
+    function triggerExport(format) {
+      alert(`Memulakan eksport lejer universal ke format ${format.toUpperCase()} (Pematuhan GP-12 & GP-14)...`);
+    }
+
+    function triggerAuditPurge() {
+      const confirmed = confirm('PENGESAHAN KESELAMATAN (GP-18):\nAdakah anda pasti untuk menjalankan pelupusan data jejak audit melebihi tempoh retensi 1,095 hari (3 tahun)? Tindakan ini akan direkodkan ke dalam lejer integriti.');
+      if (confirmed) {
+        state.auditLogs.unshift({
+          id: String(Date.now()),
+          time: new Date().toLocaleTimeString('ms-MY'),
+          date: 'Hari ini',
+          action: 'JEJAK_AUDIT_DIBUANG',
+          desc: 'Pelupusan automatik jejak audit melebihi 1,095 hari dijalankan oleh Pentadbir Sistem.',
+          ip: '10.24.18.9',
+          user: state.user.email
+        });
+        alert('Pelupusan audit berjaya dilaksanakan. Entri audit retention telah direkodkan.');
+        renderApp();
+      }
     }
 
     // MAIN RENDERER
@@ -383,9 +442,11 @@
               </div>
             </div>
 
-            <!-- Menu Navigation (EXACT MATCH TO SCREENSHOT 2) -->
+            <!-- Menu Navigation -->
             <nav class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-medium">
-              <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">MENU UTAMA</span>
+              
+              <!-- CATEGORY 1: TERAS FASA 1 -->
+              <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">MODUL UTAMA (FASA 1)</span>
               
               <!-- 1. Dashboard Utama -->
               <button onclick="setTab('dashboard')" class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer ${state.currentTab === 'dashboard' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
@@ -412,7 +473,7 @@
                   </span>
                 </button>
 
-                <!-- Nested Submenu with Vertical Connector Line -->
+                <!-- Nested Submenu -->
                 ${state.permohonanExpanded ? `
                   <div class="pl-4 border-l border-slate-700/60 ml-3.5 mt-1 space-y-1">
                     <button onclick="setTab('permohonan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
@@ -423,7 +484,7 @@
                     </button>
                     <button onclick="setTab('permohonan-baru')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan-baru' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
                       <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan-baru' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                       </svg>
                       <span>Borang Permohonan Baru</span>
                     </button>
@@ -442,13 +503,13 @@
               <!-- 4. Pekeliling & Notis -->
               <button onclick="setTab('pekeliling')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pekeliling' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
                 <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pekeliling' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                 </svg>
                 <span>Pekeliling &amp; Notis</span>
               </button>
 
               <!-- 5. Jejak Audit Sistem -->
-              <button onclick="setTab('dashboard')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+              <button onclick="setTab('audit')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
                 <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'audit' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
@@ -456,12 +517,70 @@
               </button>
 
               <!-- 6. Tetapan & Konfigurasi -->
-              <button onclick="setTab('dashboard')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'tetapan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+              <button onclick="setTab('tetapan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'tetapan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
                 <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'tetapan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
                 <span>Tetapan &amp; Konfigurasi</span>
               </button>
+
+              <!-- 7. Profil & Aku-Janji -->
+              <button onclick="setTab('profil')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'profil' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'profil' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>Profil &amp; Aku-Janji (GP-06)</span>
+              </button>
+
+              <!-- CATEGORY 2: PELUASAN FASA 2 -->
+              <div class="pt-3">
+                <span class="block text-[10px] font-bold text-purple-400 uppercase tracking-wider px-3 mb-2">PELUASAN (FASA 2)</span>
+                
+                <!-- 8. Modul Pemaliman -->
+                <button onclick="setTab('pemaliman')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pemaliman' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pemaliman' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+                  </svg>
+                  <span>Modul Pemaliman (Malim)</span>
+                </button>
+
+                <!-- 9. Modul Kawal Selia M2 -->
+                <button onclick="setTab('kawalselia')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'kawalselia' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'kawalselia' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                  </svg>
+                  <span>Kawal Selia &amp; Pemeriksaan</span>
+                </button>
+
+                <!-- 10. Modul Pengurusan Aset M6 -->
+                <button onclick="setTab('aset')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'aset' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'aset' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  <span>Pengurusan Aset Pelabuhan</span>
+                </button>
+
+                <!-- 11. Gerbang Bayaran FPX -->
+                <button onclick="setTab('fpx')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'fpx' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'fpx' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/>
+                    <line x1="2" y1="10" x2="22" y2="10" stroke-width="2"/>
+                  </svg>
+                  <span>Gerbang Bayaran FPX</span>
+                </button>
+
+                <!-- 12. Peta GIS & Sempadan -->
+                <button onclick="setTab('gis')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'gis' ? 'bg-purple-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                  <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'gis' ? 'text-white' : 'text-purple-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke-width="2"/>
+                    <line x1="8" y1="2" x2="8" y2="18" stroke-width="2"/>
+                    <line x1="16" y1="6" x2="16" y2="22" stroke-width="2"/>
+                  </svg>
+                  <span>GIS &amp; Sempadan Pelabuhan</span>
+                </button>
+              </div>
+
             </nav>
 
             <!-- Bottom User & Logout -->
@@ -487,25 +606,25 @@
             <!-- Top Admin Header -->
             <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between no-print">
               <div class="text-xs text-slate-500 font-medium">
-                <span class="font-bold text-[#0b2545]">e-Kawalselia</span> / <span>Panel Pengurusan</span>
+                <span class="font-bold text-[#0b2545]">e-Kawalselia</span> / <span class="capitalize">${state.currentTab.replace('-', ' ')}</span>
               </div>
 
               <div class="flex items-center gap-4 text-xs">
                 <!-- Language -->
                 <div class="bg-slate-900 text-white px-3 py-1 rounded-lg flex items-center gap-2 text-[11px] font-bold">
-                  <span class="text-amber-400">Malay</span>
+                  <span class="text-amber-400">Bahasa Melayu</span>
                   <span class="text-slate-500">|</span>
                   <span class="text-slate-400">English</span>
                 </div>
 
                 <!-- Notifications -->
-                <div class="relative cursor-pointer">
+                <div class="relative cursor-pointer" onclick="alert('Pemberitahuan Sistem:\n1. Permohonan LPK/LPS/2026/00142 telah diluluskan.\n2. Jadual audit ISPS Dermaga Barat pada 02 Sept 2026.\n3. Salinan sandaran audit dijana berjaya.')">
                   <span class="p-2 text-slate-600 block">🔔</span>
                   <span class="absolute top-1 right-1 h-4 w-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">3</span>
                 </div>
 
                 <!-- User pill -->
-                <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+                <div class="flex items-center gap-2 pl-3 border-l border-slate-200 cursor-pointer" onclick="setTab('profil')">
                   <div class="h-8 w-8 rounded-full bg-[#0b2545] text-white flex items-center justify-center text-xs font-bold">
                     👤
                   </div>
@@ -535,6 +654,14 @@
         case 'certificate': return renderAdminCertificateContent();
         case 'semak': return renderAdminSemakContent();
         case 'pekeliling': return renderAdminPekelilingContent();
+        case 'audit': return renderAdminAuditContent();
+        case 'tetapan': return renderAdminTetapanContent();
+        case 'profil': return renderAdminProfilContent();
+        case 'pemaliman': return renderAdminPemalimanContent();
+        case 'kawalselia': return renderAdminKawalseliaContent();
+        case 'aset': return renderAdminAsetContent();
+        case 'fpx': return renderAdminFpxContent();
+        case 'gis': return renderAdminGisContent();
         default: return renderAdminDashboardContent();
       }
     }
@@ -1171,18 +1298,435 @@
     function renderAdminPekelilingContent() {
       return `
         <div class="max-w-5xl mx-auto space-y-6">
-          <h1 class="text-2xl font-bold text-[#0b2545]">Pekeliling &amp; Notis Rasmi</h1>
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Pekeliling &amp; Notis Rasmi</h1>
+              <p class="text-xs text-slate-500">Warta, Notis Sistem &amp; Panduan Operasi Pelabuhan Kemaman</p>
+            </div>
+            <button onclick="alert('Borang muat naik pekeliling baru hanya boleh diakses oleh Pentadbir Sistem.')" class="px-4 py-2 bg-[#0b2545] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+              + Muat Naik Pekeliling
+            </button>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span class="px-2 py-0.5 bg-blue-100 text-blue-800 font-bold rounded">Pekeliling Pelabuhan</span>
-              <h3 class="text-base font-bold text-slate-900">Garis Panduan Permohonan Lesen 2026</h3>
-              <p class="text-slate-600">Semua permohonan kini dilaksanakan secara digital melalui gerbang e-Kawalselia.</p>
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-800 font-bold rounded text-[10px]">Pekeliling Pelabuhan Bil. 01/2026</span>
+                <span class="text-slate-400">15 Jan 2026</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Garis Panduan Permohonan Lesen Sokongan &amp; Permit Aktiviti 2026</h3>
+              <p class="text-slate-600">Semua syarikat perkapalan dan kontraktor maritim diwajibkan mengemukakan permohonan melalui gerbang e-Kawalselia.</p>
+              <div class="pt-2">
+                <a href="#" onclick="alert('Memuat turun fail PDF Pekeliling Bil. 01/2026...')" class="text-blue-700 font-bold hover:underline">Muat Turun PDF (2.4 MB) →</a>
+              </div>
             </div>
-            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded">Piawaian Keselamatan</span>
-              <h3 class="text-base font-bold text-slate-900">Pematuhan Dasar Keselamatan ICT &amp; MFA</h3>
-              <p class="text-slate-600">Sistem dilindungi pengesahan dua-faktor (MFA) dan enkripsi pangkalan data.</p>
+
+            <div class="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded text-[10px]">Piawaian Keselamatan</span>
+                <span class="text-slate-400">01 Feb 2026</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">Pematuhan Dasar Keselamatan ICT &amp; Aku-Janji Integriti (GP-06)</h3>
+              <p class="text-slate-600">Pelaksanaan pengesahan dua-faktor (MFA), had kunci 3 kali, dan pengekalan jejak audit sekuriti.</p>
+              <div class="pt-2">
+                <a href="#" onclick="alert('Memuat turun fail Dasar Keselamatan ICT...')" class="text-emerald-700 font-bold hover:underline">Lihat Dasar Keselamatan →</a>
+              </div>
             </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 9. JEJAK AUDIT SISTEM (GP-18)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminAuditContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Jejak Audit Sistem (Audit Trail GP-18)</h1>
+              <p class="text-xs text-slate-500">Log aktiviti automatik, pengesanan IP, dan pelupusan retensi 1,095 hari</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="triggerAuditPurge()" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+                🗑️ Jalankan Pelupusan Audit (Purge)
+              </button>
+              <button onclick="triggerExport('excel')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+                Eksport Lejer Audit
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <th class="py-3 px-4 font-bold">Masa &amp; Tarikh</th>
+                    <th class="py-3 px-4 font-bold">Kod Tindakan</th>
+                    <th class="py-3 px-4 font-bold">Keterangan Aktiviti</th>
+                    <th class="py-3 px-4 font-bold">Alamat IP</th>
+                    <th class="py-3 px-4 font-bold">ID Pengguna</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-mono">
+                  ${state.auditLogs.map(log => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="py-3 px-4 text-slate-500 whitespace-nowrap">${log.date} ${log.time}</td>
+                      <td class="py-3 px-4 font-bold text-blue-900">${log.action}</td>
+                      <td class="py-3 px-4 font-sans text-slate-800">${log.desc}</td>
+                      <td class="py-3 px-4 text-slate-600">${log.ip}</td>
+                      <td class="py-3 px-4 font-bold text-slate-900">${log.user}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 10. TETAPAN & KONFIGURASI (GP-07, GP-08, GP-09)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminTetapanContent() {
+      return `
+        <div class="max-w-4xl mx-auto space-y-6">
+          <div>
+            <h1 class="text-2xl font-bold text-[#0b2545]">Tetapan &amp; Konfigurasi Sistem (GP-07, GP-08, GP-09)</h1>
+            <p class="text-xs text-slate-500">Konfigurasi maklumat organisasi LPKmn, parameter sekuriti &amp; pendaftaran senarai pilihan (Lookup Registry).</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Organization Identity (GP-08) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
+              <h3 class="font-bold text-sm text-slate-900 border-b pb-2">Maklumat Organisasi LPKmn (GP-08)</h3>
+              <div class="space-y-2">
+                <div>
+                  <span class="text-slate-500 block">Nama Organisasi:</span>
+                  <span class="font-bold text-slate-900">Lembaga Pelabuhan Kemaman</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block">Urusetia:</span>
+                  <span class="font-semibold text-slate-900">Unit IT, Bahagian Korporat &amp; Pembangunan</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block">Alamat Pejabat:</span>
+                  <span class="text-slate-800">Telok Kalong, Peti Surat 66, 24000 Kemaman, Terengganu</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block">Portal Rasmi:</span>
+                  <a href="https://www.lpkmn.gov.my/" target="_blank" class="text-blue-700 font-bold hover:underline">https://www.lpkmn.gov.my/</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Policy Config (GP-03) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
+              <h3 class="font-bold text-sm text-slate-900 border-b pb-2">Parameter Keselamatan DKICT (GP-03)</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Tamat Sesi Automatik (Idle Timeout):</span>
+                  <span class="font-bold font-mono bg-slate-100 px-2 py-0.5 rounded">10 Minit</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Had Cubaan Log Masuk (Lockout):</span>
+                  <span class="font-bold font-mono bg-slate-100 px-2 py-0.5 rounded">3 Kali</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Tempoh Kunci Akaun:</span>
+                  <span class="font-bold font-mono bg-slate-100 px-2 py-0.5 rounded">15 Minit</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Panjang Minimum Kata Laluan:</span>
+                  <span class="font-bold font-mono bg-slate-100 px-2 py-0.5 rounded">12 Aksara</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-600">Pengesahan Dua-Faktor (MFA TOTP):</span>
+                  <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Diwajibkan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 11. PROFIL PENGGUNA & AKU-JANJI (GP-05, GP-06)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminProfilContent() {
+      return `
+        <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-md border border-slate-200 space-y-6 text-xs">
+          <div class="flex items-center gap-4 border-b border-slate-100 pb-5">
+            <div class="h-16 w-16 rounded-full bg-[#0b2545] text-white flex items-center justify-center text-2xl font-bold">
+              👤
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-[#0b2545]">${state.user.name}</h1>
+              <p class="text-slate-500 font-medium">${state.user.role} &bull; ${state.user.unit}</p>
+              <span class="inline-block mt-1 px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded-full text-[10px]">
+                ✓ Akaun Disahkan &amp; Aktif
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 block font-bold uppercase text-[10px]">Emel Rasmi:</span>
+              <span class="font-bold text-slate-900">${state.user.email}</span>
+            </div>
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="text-slate-500 block font-bold uppercase text-[10px]">No. Telefon:</span>
+              <span class="font-bold text-slate-900">${state.user.phone}</span>
+            </div>
+          </div>
+
+          <!-- Aku-Janji Undertaking Record (GP-06) -->
+          <div class="p-5 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-amber-950 uppercase text-xs">Surat Aku-Janji Integriti Pengguna (GP-06):</span>
+              <span class="px-2 py-0.5 bg-emerald-200 text-emerald-950 font-bold rounded text-[10px]">STATUS: DIPERAKUI</span>
+            </div>
+            <p class="text-slate-700 text-justify">
+              Pengguna ini telah menandatangani dan memperakui Surat Aku-Janji Integriti serta mematuhi Dasar Keselamatan ICT Lembaga Pelabuhan Kemaman (LPKmn).
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 12. FASA 2: MODUL PEMALIMAN (PILOTAGE M1-7 / M1-8)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminPemalimanContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
+                <span class="text-xs text-slate-500">M1-7 / M1-8</span>
+              </div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Pengurusan Pemaliman Pelabuhan (Pilotage)</h1>
+              <p class="text-xs text-slate-500">Daftar Malim Berlesen, Sijil Pengecualian Malim (PEC) &amp; Jawatankuasa Pemaliman LPKmn</p>
+            </div>
+            <button onclick="alert('Borang pendaftaran permohonan malim baru dibuka.')" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+              + Permohonan Lesen Malim Baru
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${state.pilots.map(p => `
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                  <span class="font-mono font-bold text-xs text-purple-900">${p.licenceNo}</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">${p.status}</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">${p.name}</h3>
+                <div class="space-y-1 text-xs text-slate-600">
+                  <p><strong>Gred:</strong> ${p.grade}</p>
+                  <p><strong>Rekod Pergerakan:</strong> ${p.vesselCount}</p>
+                  <p><strong>Sah Sehingga:</strong> ${p.expiry}</p>
+                </div>
+                <div class="pt-3 border-t flex justify-between items-center">
+                  <button onclick="alert('Memaparkan Kad Kuasa Malim Rasmi bagi ${p.name}')" class="text-xs font-bold text-purple-700 hover:underline cursor-pointer">
+                    Lihat Kad Kuasa Malim →
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 13. FASA 2: MODUL KAWAL SELIA & PEMERIKSAAN (M2)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminKawalseliaContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
+                <span class="text-xs text-slate-500">M2-1 hingga M2-5</span>
+              </div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Kawal Selia &amp; Pemeriksaan Operasi (M2)</h1>
+              <p class="text-xs text-slate-500">Penjadualan lawatan tapak pegawai, senarai semak keselamatan ISPS &amp; Corrective Action Report (CAR)</p>
+            </div>
+            <button onclick="alert('Penjadualan pemeriksaan tapak baru dibuka.')" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+              + Jadualkan Lawatan Tapak
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <th class="py-3 px-4 font-bold">No. Rujukan</th>
+                    <th class="py-3 px-4 font-bold">Lokasi / Fasiliti Pelabuhan</th>
+                    <th class="py-3 px-4 font-bold">Pegawai Pemeriksa</th>
+                    <th class="py-3 px-4 font-bold">Tarikh Lawatan</th>
+                    <th class="py-3 px-4 font-bold">Jenis Audit</th>
+                    <th class="py-3 px-4 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${state.inspections.map(ins => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="py-3 px-4 font-mono font-bold text-blue-900">${ins.refNo}</td>
+                      <td class="py-3 px-4 font-bold text-slate-900">${ins.site}</td>
+                      <td class="py-3 px-4">${ins.officer}</td>
+                      <td class="py-3 px-4 text-slate-500">${ins.date}</td>
+                      <td class="py-3 px-4">${ins.type}</td>
+                      <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${ins.status.includes('Selesai') ? 'bg-emerald-100 text-emerald-800' : ins.status.includes('CAR') ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800'}">
+                          ${ins.status}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 14. FASA 2: MODUL PENGURUSAN ASET (M6)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminAsetContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
+                <span class="text-xs text-slate-500">M6-1 hingga M6-4</span>
+              </div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Pengurusan Aset &amp; Peralatan Keselamatan (M6)</h1>
+              <p class="text-xs text-slate-500">Daftar aset konsesi pelabuhan, pinjaman peralatan maritim &amp; rekod penyelenggaraan berkala</p>
+            </div>
+            <button onclick="alert('Borang pinjaman peralatan keselamatan dibuka.')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+              + Permohonan Pinjaman Peralatan
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${state.assets.map(ast => `
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                  <span class="font-mono font-bold text-xs text-emerald-800">${ast.code}</span>
+                  <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">${ast.status}</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">${ast.name}</h3>
+                <div class="space-y-1 text-xs text-slate-600">
+                  <p><strong>Kategori:</strong> ${ast.category}</p>
+                  <p><strong>Lokasi:</strong> ${ast.location}</p>
+                  <p><strong>Keadaan:</strong> ${ast.condition}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 15. FASA 2: GERBANG BAYARAN FPX (X-1)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminFpxContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
+                <span class="text-xs text-slate-500">X-1 Payment Gateway</span>
+              </div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">Gerbang Pembayaran Maritim (FPX Gateway)</h1>
+              <p class="text-xs text-slate-500">Kutipan fi lesen dalam talian secara automatik berserta pengeluaran resit rasmi elektronik LPKmn</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <h3 class="font-bold text-sm text-slate-900">Transaksi Bayaran FPX Terkini</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <th class="py-3 px-4 font-bold">No. Rujukan FPX</th>
+                    <th class="py-3 px-4 font-bold">Permohonan</th>
+                    <th class="py-3 px-4 font-bold">Pembayar</th>
+                    <th class="py-3 px-4 font-bold">Saluran Perbankan</th>
+                    <th class="py-3 px-4 font-bold">Jumlah (RM)</th>
+                    <th class="py-3 px-4 font-bold">No. Resit</th>
+                    <th class="py-3 px-4 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${state.fpxTransactions.map(tx => `
+                    <tr class="hover:bg-slate-50">
+                      <td class="py-3 px-4 font-mono font-bold text-blue-900">${tx.ref}</td>
+                      <td class="py-3 px-4 font-mono">${tx.appRef}</td>
+                      <td class="py-3 px-4 font-bold text-slate-900">${tx.payer}</td>
+                      <td class="py-3 px-4">${tx.bank}</td>
+                      <td class="py-3 px-4 font-black text-slate-950">${tx.amount}</td>
+                      <td class="py-3 px-4 font-mono text-slate-600">${tx.receiptNo}</td>
+                      <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          ✓ ${tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 16. FASA 2: GIS & SEMPADAN MARITIM (X-2)
+    // ─────────────────────────────────────────────────────────────
+    function renderAdminGisContent() {
+      return `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-[10px] font-bold rounded uppercase">Modul Fasa 2</span>
+                <span class="text-xs text-slate-500">X-2 GIS & Polygons</span>
+              </div>
+              <h1 class="text-2xl font-bold text-[#0b2545]">GIS &amp; Sempadan Zon Maritim Pelabuhan</h1>
+              <p class="text-xs text-slate-500">Pemetaan interaktif kawasan Had Pelabuhan Kemaman (*Port Limits*), Dermaga Barat, Dermaga Timur &amp; Zon Bebas Cukai</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            ${state.gisZones.map(z => `
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                  <h3 class="font-bold text-sm text-[#0b2545]">${z.name}</h3>
+                  <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded">${z.isps}</span>
+                </div>
+                <div class="space-y-1 text-xs text-slate-600">
+                  <p><strong>Keluasan Kawasan:</strong> ${z.area}</p>
+                  <p><strong>Koordinat Geografi:</strong> <span class="font-mono text-slate-900 font-bold">${z.coords}</span></p>
+                  <p><strong>Pihak Berkuasa Kawal Selia:</strong> ${z.authority}</p>
+                </div>
+              </div>
+            `).join('')}
           </div>
         </div>
       `;
