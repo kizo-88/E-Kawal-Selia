@@ -63,6 +63,7 @@
         email: 'admin@lpkmn.gov.my'
       },
       currentTab: 'home', // 'home' | 'dashboard' | 'permohonan' | 'permohonan-baru' | 'pelesenan' | 'certificate' | 'semak' | 'pekeliling' | 'audit' | 'profil'
+      permohonanExpanded: true,
       selectedLicenceId: '1',
       semakToken: '7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4',
       applications: [
@@ -412,38 +413,84 @@
               </div>
             </div>
 
-            <!-- Menu Navigation -->
-            <nav class="flex-1 overflow-y-auto p-4 space-y-2 text-xs font-medium">
-              <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 mb-2">MENU UTAMA</span>
+            <!-- Menu Navigation (EXACT MATCH TO SCREENSHOT 2) -->
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1.5 text-xs font-medium">
+              <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">MENU UTAMA</span>
               
-              <button onclick="setTab('dashboard')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'dashboard' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>📊</span>
+              <!-- 1. Dashboard Utama -->
+              <button onclick="setTab('dashboard')" class="w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer ${state.currentTab === 'dashboard' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'dashboard' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="3" stroke-width="2"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m-7-5a7 7 0 0014 0M5 11h14"/>
+                </svg>
                 <span>Dashboard Utama</span>
               </button>
 
-              <button onclick="setTab('permohonan')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'permohonan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>📁</span>
-                <span>Senarai Permohonan</span>
-              </button>
+              <!-- 2. Modul Permohonan (Tree Accordion) -->
+              <div>
+                <button onclick="state.permohonanExpanded = !state.permohonanExpanded; renderApp();" class="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer">
+                  <span class="flex items-center gap-2.5">
+                    <svg class="h-4 w-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span>Modul Permohonan</span>
+                  </span>
+                  <span class="text-slate-400">
+                    <svg class="h-3.5 w-3.5 transform transition-transform ${state.permohonanExpanded ? '' : 'rotate-180'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                    </svg>
+                  </span>
+                </button>
 
-              <button onclick="setTab('permohonan-baru')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'permohonan-baru' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>✍️</span>
-                <span>Borang Permohonan Baru</span>
-              </button>
+                <!-- Nested Submenu with Vertical Connector Line -->
+                ${state.permohonanExpanded ? `
+                  <div class="pl-4 border-l border-slate-700/60 ml-3.5 mt-1 space-y-1">
+                    <button onclick="setTab('permohonan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <span>Senarai Permohonan</span>
+                    </button>
+                    <button onclick="setTab('permohonan-baru')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'permohonan-baru' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                      <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'permohonan-baru' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <span>Borang Permohonan Baru</span>
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
 
-              <button onclick="setTab('pelesenan')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>📜</span>
+              <!-- 3. Pelesenan & Permit -->
+              <button onclick="setTab('pelesenan')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pelesenan' || state.currentTab === 'certificate' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 20a2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1M4 17l1.5-6h13l1.5 6M9 11V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/>
+                </svg>
                 <span>Pelesenan &amp; Permit</span>
               </button>
 
-              <button onclick="setTab('semak')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'semak' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>🔍</span>
-                <span>Semakan Kod QR</span>
+              <!-- 4. Pekeliling & Notis -->
+              <button onclick="setTab('pekeliling')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'pekeliling' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'pekeliling' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>Pekeliling &amp; Notis</span>
               </button>
 
-              <button onclick="setTab('pekeliling')" class="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${state.currentTab === 'pekeliling' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800'}">
-                <span>📢</span>
-                <span>Pekeliling &amp; Notis</span>
+              <!-- 5. Jejak Audit Sistem -->
+              <button onclick="setTab('dashboard')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'audit' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'audit' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                <span>Jejak Audit Sistem</span>
+              </button>
+
+              <!-- 6. Tetapan & Konfigurasi -->
+              <button onclick="setTab('dashboard')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${state.currentTab === 'tetapan' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'}">
+                <svg class="h-4 w-4 shrink-0 ${state.currentTab === 'tetapan' ? 'text-slate-950' : 'text-slate-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span>Tetapan &amp; Konfigurasi</span>
               </button>
             </nav>
 
