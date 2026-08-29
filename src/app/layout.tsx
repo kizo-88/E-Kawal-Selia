@@ -18,7 +18,16 @@ export const metadata: Metadata = {
   title: 'e-Kawalselia — Lembaga Pelabuhan Kemaman',
   description:
     'Sistem pelesenan, permit dan kawal selia Lembaga Pelabuhan Kemaman. Permohonan, semakan, kelulusan dan pengesahan lesen secara dalam talian.',
+  icons: {
+    icon: [
+      { url: '/images/logo-lpkmn.png', sizes: 'any', type: 'image/png' },
+      { url: '/favicon.ico', type: 'image/x-icon' },
+    ],
+    shortcut: '/images/logo-lpkmn.png',
+    apple: '/images/logo-lpkmn.png',
+  },
 }
+
 
 // GP-07: the interface language is a setting, not a constant. Phase 1 ships
 // Malay, so this is the correct default — but it reads from `settings` once the
