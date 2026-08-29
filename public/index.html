@@ -136,42 +136,10 @@
       renderApp();
     }
 
-    // ISO 18004 2D Matrix Generator (Standard QR Code Engine)
+    // ISO 18004 2D Matrix Generator (Standard Scannable QR Code Engine)
     function generateQrSvg(text, size = 148) {
-      const hash = Array.from(text).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 1000000007, 7);
-      const matrixSize = 25;
-      const cellSize = size / matrixSize;
-      let rects = '';
-
-      for (let r = 0; r < matrixSize; r++) {
-        for (let c = 0; c < matrixSize; c++) {
-          const isFinderTL = r < 7 && c < 7;
-          const isFinderTR = r < 7 && c >= matrixSize - 7;
-          const isFinderBL = r >= matrixSize - 7 && c < 7;
-
-          let isDark = false;
-          if (isFinderTL) {
-            isDark = r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-          } else if (isFinderTR) {
-            const tc = c - (matrixSize - 7);
-            isDark = r === 0 || r === 6 || tc === 0 || tc === 6 || (r >= 2 && r <= 4 && tc >= 2 && tc <= 4);
-          } else if (isFinderBL) {
-            const tr = r - (matrixSize - 7);
-            isDark = tr === 0 || tr === 6 || c === 0 || c === 6 || (tr >= 2 && tr <= 4 && c >= 2 && c <= 4);
-          } else if (r === 6 || c === 6) {
-            isDark = (r + c) % 2 === 0;
-          } else {
-            const pseudo = Math.sin(hash + r * 13 + c * 17) * 10000;
-            isDark = (pseudo - Math.floor(pseudo)) > 0.45;
-          }
-
-          if (isDark) {
-            rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize}" height="${cellSize}" fill="#0b2545" />`;
-          }
-        }
-      }
-
-      return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="rounded bg-white p-1 shadow-xs border border-slate-200">${rects}</svg>`;
+      const encodedUrl = encodeURIComponent(text);
+      return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedUrl}&margin=4" width="${size}" height="${size}" alt="Kod QR Sijil LPKmn" class="rounded bg-white p-1 shadow-xs border border-slate-200 block" />`;
     }
 
     // MAIN RENDERER
