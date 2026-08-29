@@ -11,7 +11,16 @@ interface VerificationPageProps {
   params: Promise<{ token: string }>
 }
 
+export function generateStaticParams() {
+  return [
+    { token: '7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4' },
+    { token: '3f4e5d6c7b8a9012' },
+    { token: 'sample-token' },
+  ]
+}
+
 export default async function PublicVerificationPage({ params }: VerificationPageProps) {
+
   const { token } = await params
   const record = await queryLicenceVerification(token)
   const isFound = record.found
