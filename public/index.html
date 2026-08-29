@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ms" class="h-full antialiased scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Kawalselia — Lembaga Pelabuhan Kemaman</title>
+  <meta name="description" content="Portal Rasmi Sistem Pelesenan, Permit dan Kawal Selia Lembaga Pelabuhan Kemaman (LPKmn).">
+  <link rel="icon" href="/images/logo-lpkmn.png" type="image/png">
+  <link rel="shortcut icon" href="/images/logo-lpkmn.png">
+  <link rel="apple-touch-icon" href="/images/logo-lpkmn.png">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google tag (gtag.js) Firebase Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8HJMVCGRWF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-8HJMVCGRWF');
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="flex min-h-full flex-col bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-white">
+
+  <!-- TOP GOVERNMENT BAR -->
+  <div class="bg-[#0b2545] text-slate-100 text-xs py-1.5 px-4 sm:px-8 border-b border-[#133e87]">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <a href="https://www.lpkmn.gov.my/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-amber-300 transition-colors" title="Layari Portal Rasmi Lembaga Pelabuhan Kemaman">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+        <span class="font-medium tracking-wide">Portal Rasmi Lembaga Pelabuhan Kemaman (LPKmn) ↗</span>
+      </a>
+      <div class="flex items-center gap-4 text-[11px] text-slate-300">
+        <span class="hidden sm:inline">Kementerian Pengangkutan Malaysia</span>
+        <span class="hidden md:inline">|</span>
+        <span class="hidden md:inline">Zon Bebas Cukai Pelabuhan Kemaman</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-xs border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-3.5 group">
+        <div class="h-12 w-12 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <img src="/images/logo-lpkmn.png" alt="Logo Rasmi Lembaga Pelabuhan Kemaman" class="h-full w-full object-contain">
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-baseline gap-2">
+            <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0b2545]">e-Kawalselia</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300">LPKmn</span>
+          </div>
+          <span class="text-[11px] sm:text-xs text-slate-600 font-medium tracking-tight">Sistem Pelesenan, Permit &amp; Kawal Selia Pelabuhan</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-700">
+        <a href="#perkhidmatan" class="hover:text-[#0b2545] transition-colors py-1">Perkhidmatan</a>
+        <a href="#semak-sijil" class="hover:text-[#0b2545] transition-colors py-1">Semakan QR</a>
+        <a href="#pekeliling" class="hover:text-[#0b2545] transition-colors py-1">Pekeliling &amp; FAQ</a>
+        <a href="https://www.lpkmn.gov.my/" target="_blank" rel="noopener noreferrer" class="hover:text-[#0b2545] transition-colors py-1 flex items-center gap-1">
+          <span>Portal LPKmn</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="#log-masuk" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#0b2545] hover:bg-[#133e87] rounded-lg shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          <span>Log Masuk</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <main class="flex-1">
+    <section class="relative bg-gradient-to-b from-slate-900 via-[#0b2545] to-[#133e87] text-white py-16 sm:py-24 px-4 sm:px-8 overflow-hidden">
+      <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+      <div class="max-w-6xl mx-auto relative z-10 text-center space-y-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-amber-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Sistem Bersepadu Pengurusan Pelesenan Maritim LPKmn</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight">
+          Gerbang Digital Pelesenan &amp; Kawalselia Operasi Pelabuhan Kemaman
+        </h1>
+        <p class="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto font-normal leading-relaxed">
+          Permohonan lesen perkhidmatan sokongan, permit aktiviti maritim, sokongan PDA2, dan semakan ketulenan dokumen rasmi secara dalam talian.
+        </p>
+
+        <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
+          <a href="#perkhidmatan" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg shadow-md transition-transform hover:-translate-y-0.5">
+            Mohon Lesen / Permit Sekarang
+          </a>
+          <a href="#semak-sijil" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg border border-white/20 backdrop-blur-xs transition-colors">
+            Semak Ketulenan Sijil (QR)
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 CORE SERVICES (GP-21, M1) -->
+    <section id="perkhidmatan" class="py-16 px-4 sm:px-8 max-w-7xl mx-auto">
+      <div class="text-center space-y-2 mb-12">
+        <span class="text-xs font-bold text-amber-600 uppercase tracking-widest">Kategori Perkhidmatan</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Perkhidmatan Pelesenan &amp; Permit Maritim</h2>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">Pilih modul pelesenan di bawah untuk membuat permohonan baharu atau semakan status.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div class="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
+          <div class="h-12 w-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0b2545]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded">M1-R13 · P1</span>
+          <h3 class="text-lg font-bold text-slate-900">Lesen Perkhidmatan Sokongan Pelabuhan</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Pelesenan bagi syarikat pembekal perkhidmatan sokongan, bunker, pelupusan sisa maritim, dan kelengkapan bot tunda.</p>
+          <div class="pt-2 text-xs font-semibold text-[#0b2545] flex items-center gap-1">
+            <span>Tempoh Sah: 12 – 24 Bulan</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
+          <div class="h-12 w-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded">M1-R14 · P1</span>
+          <h3 class="text-lg font-bold text-slate-900">Permit Aktiviti Pelabuhan (PAP)</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Kebenaran operasi bagi aktiviti maritim khas, pemindahan kargo, penyelaman komersial, dan kerja marin berjadual.</p>
+          <div class="pt-2 text-xs font-semibold text-amber-600 flex items-center gap-1">
+            <span>Kelulusan Pantas (SLA 3 Hari)</span>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
+          <div class="h-12 w-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          </div>
+          <span class="inline-block text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">M1-R15 · P1</span>
+          <h3 class="text-lg font-bold text-slate-900">Surat Sokongan PDA2</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">Pengeluaran surat perakuan dan sokongan rasmi di bawah Akta Kemajuan Petroleum (PDA) bagi operasi di dermaga LPKmn.</p>
+          <div class="pt-2 text-xs font-semibold text-emerald-600 flex items-center gap-1">
+            <span>Sijil Digital &amp; Kod QR Tersemat</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QR VERIFICATION DEMO SECTION (X-R11, X-R12) -->
+    <section id="semak-sijil" class="py-16 px-4 sm:px-8 bg-slate-100 border-y border-slate-200">
+      <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-300 p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row items-center gap-5 border-b border-slate-200 pb-6">
+          <div class="h-16 w-16 flex items-center justify-center shrink-0">
+            <img src="/images/logo-lpkmn.png" alt="Logo LPKmn" class="h-full w-full object-contain">
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-[#0b2545]">Semakan Ketulenan Sijil Lesen (Kod QR)</h2>
+            <p class="text-xs text-slate-500">Piawaian Keselamatan Maritim X-R11 &amp; X-R12 — Semak kesahihan sijil lesen digital dengan imbasan kod QR.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <span class="font-bold text-slate-900 block">Contoh Sijil 1 (Lesen Sokongan):</span>
+            <p class="font-mono text-slate-700 font-bold">LPK/LPS/2026/00142</p>
+            <p class="text-slate-500">Pemegang: Kemaman Supply Base Sdn. Bhd.</p>
+            <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded">Status: Berkuat Kuasa / Sah</span>
+          </div>
+
+          <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <span class="font-bold text-slate-900 block">Contoh Sijil 2 (Permit Aktiviti):</span>
+            <p class="font-mono text-slate-700 font-bold">LPK/PAP/2026/00065</p>
+            <p class="text-slate-500">Pemegang: Teluk Kalong Marine Services</p>
+            <span class="inline-block px-2 py-0.5 bg-amber-100 text-amber-800 font-bold rounded">Status: Amaran Tamat Tempoh</span>
+          </div>
+        </div>
+
+        <div class="text-center pt-2">
+          <p class="text-xs text-slate-500">Imbas kod QR pada mana-mana sijil fizikal/digital LPKmn menggunakan kamera telefon pintar untuk pengesahan serta-merta.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOG MASUK PORTAL (GP-03, GP-15) -->
+    <section id="log-masuk" class="py-16 px-4 sm:px-8 max-w-xl mx-auto">
+      <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-md space-y-6 text-center">
+        <div class="h-14 w-14 mx-auto flex items-center justify-center">
+          <img src="/images/logo-lpkmn.png" alt="Logo LPKmn" class="h-full w-full object-contain">
+        </div>
+        <div class="space-y-1">
+          <h2 class="text-xl font-extrabold text-[#0b2545]">Log Masuk e-Kawalselia</h2>
+          <p class="text-xs text-slate-500">Gerbang Keselamatan Kerajaan Malaysia (DKICT / MFA 2FA)</p>
+        </div>
+
+        <div class="text-left text-xs bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 font-mono">
+          <span class="font-sans font-bold text-slate-900 block">Akaun Ujian Rasmi Pangkalan Data Supabase:</span>
+          <div>
+            <span class="text-slate-500 block text-[11px]">🛡️ Super Admin:</span>
+            <span class="font-bold text-[#0b2545]">admin@lpkmn.gov.my</span> / <span class="text-slate-700">Admin@LPKmn2026!</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[11px]">📋 Pegawai Penilai:</span>
+            <span class="font-bold text-[#0b2545]">reviewer@lpkmn.gov.my</span> / <span class="text-slate-700">Officer@LPKmn2026!</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[11px]">🏢 Pemohon Syarikat:</span>
+            <span class="font-bold text-[#0b2545]">user@kemamansupply.com.my</span> / <span class="text-slate-700">User@Kemaman2026!</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          Sistem pangkalan data PostgreSQL Supabase Cloud dihubungkan secara langsung dan dilindungi penyulitan AES-256.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER (GP-08, GP-23) -->
+  <footer class="w-full bg-[#07192f] text-slate-300 pt-12 pb-8 border-t-4 border-amber-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-slate-800">
+        <!-- Col 1 -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="h-12 w-12 flex items-center justify-center shrink-0">
+              <img src="/images/logo-lpkmn.png" alt="Logo LPKmn" class="h-full w-full object-contain">
+            </div>
+            <div>
+              <span class="text-lg font-bold text-white tracking-tight">e-Kawalselia</span>
+              <span class="block text-[11px] text-amber-400 font-medium">Lembaga Pelabuhan Kemaman</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">Portal rasmi perkhidmatan pelesenan, permit aktiviti maritim, sokongan PDA2, dan pengawasan kawal selia operasi Lembaga Pelabuhan Kemaman.</p>
+        </div>
+
+        <!-- Col 2 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider">Alamat &amp; Urus Setia</h4>
+          <div class="text-xs text-slate-400 space-y-1 leading-relaxed">
+            <p class="font-medium text-slate-200">Urus Setia Pelesenan &amp; Kawal Selia Pelabuhan</p>
+            <p>Lembaga Pelabuhan Kemaman</p>
+            <p>Jalan Pelabuhan, Teluk Kalong, Peti Surat 66</p>
+            <p>24007 Kemaman, Terengganu Darul Iman</p>
+            <p class="text-[11px] text-slate-500 pt-1">Koordinat: 4.2486° N, 103.4567° E</p>
+          </div>
+        </div>
+
+        <!-- Col 3 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider">Hubungi Kami</h4>
+          <div class="text-xs text-slate-400 space-y-2">
+            <p>Tel: +609-863 1590 / 1591</p>
+            <p>Emel: <a href="mailto:kawalselia@lpkmn.gov.my" class="hover:text-amber-400">kawalselia@lpkmn.gov.my</a></p>
+            <p><a href="https://www.lpkmn.gov.my/" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400">Laman Web Rasmi LPKmn ↗</a></p>
+          </div>
+        </div>
+
+        <!-- Col 4 -->
+        <div class="space-y-3">
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider">Pautan &amp; Polisi</h4>
+          <ul class="text-xs space-y-2 text-slate-400">
+            <li><a href="https://www.lpkmn.gov.my/" target="_blank" rel="noopener noreferrer" class="hover:text-amber-400">Portal Utama LPKmn</a></li>
+            <li><span>Dasar Privasi &amp; Keselamatan</span></li>
+            <li><span>Manual Pengguna &amp; Bantuan</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div>&copy; 2026 Lembaga Pelabuhan Kemaman (LPKmn). Hak Cipta Terpelihara.</div>
+        <div class="text-[11px]">Versi Sistem 1.0 (P1) | Enjin Pelesenan &amp; Kawalselia Digital</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
