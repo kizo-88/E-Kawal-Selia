@@ -1021,6 +1021,23 @@
       `;
     }
 
+    // Parse URL for QR Code scan redirections (/semak/:token or ?token=...)
+    const path = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromQuery = urlParams.get('token') || urlParams.get('semak');
+    
+    if (path.includes('/semak/')) {
+      const parts = path.split('/semak/');
+      const token = parts[1] ? parts[1].split('/')[0].replace(/[^a-zA-Z0-9_-]/g, '') : '';
+      if (token) {
+        state.semakToken = token;
+        state.currentTab = 'semak';
+      }
+    } else if (tokenFromQuery) {
+      state.semakToken = tokenFromQuery;
+      state.currentTab = 'semak';
+    }
+
     // Initialize application
     renderApp();
   </script>
