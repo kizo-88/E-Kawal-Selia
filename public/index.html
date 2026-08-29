@@ -131,6 +131,10 @@
           date: '24 Ogos 2026',
           validFrom: '24 Ogos 2026',
           validUntil: '23 Ogos 2027',
+          approvedBy: 'KAPT. WAN MOHD ZULKIFLI BIN WAN SALLEH',
+          approverRole: 'Pengurus Besar / Pegawai Pelesenan Maritim',
+          approvalDate: '24 Ogos 2026',
+          digitalSignatureId: 'DS-LPK-84920-SEC',
           qrToken: '7e28a9b1c3d4e5f6a7b8c9d0e1f2a3b4'
         },
         {
@@ -144,6 +148,10 @@
           date: '18 Ogos 2026',
           validFrom: '18 Ogos 2025',
           validUntil: '17 Ogos 2026',
+          approvedBy: 'EN. AHMAD ZULKIFLI',
+          approverRole: 'Pegawai Penilai (M/T), Unit Marin & Trafik',
+          approvalDate: '18 Ogos 2025',
+          digitalSignatureId: 'DS-LPK-73019-SEC',
           qrToken: '3f4e5d6c7b8a9012'
         },
         {
@@ -155,8 +163,12 @@
           status: 'in_review',
           statusLabel: 'Dalam Semakan Pegawai',
           date: '28 Ogos 2026',
-          validFrom: '28 Ogos 2026',
-          validUntil: '27 Ogos 2027',
+          validFrom: 'Menunggu Kelulusan',
+          validUntil: 'Menunggu Kelulusan',
+          approvedBy: null,
+          approverRole: null,
+          approvalDate: null,
+          digitalSignatureId: null,
           qrToken: '9a8b7c6d5e4f3a2b'
         }
       ],
@@ -277,6 +289,99 @@
         alert('Pelupusan audit berjaya dilaksanakan. Entri audit retention telah direkodkan.');
         renderApp();
       }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BLUE INK e-COP & e-SIGNATURE GENERATORS
+    // ─────────────────────────────────────────────────────────────
+    function generateBlueECopSvg(officerName, dateStr, refNo) {
+      const displayDate = dateStr || '29 Ogos 2026';
+      return `
+        <div class="relative inline-flex flex-col items-center justify-center select-none" style="transform: rotate(-3deg);">
+          <svg width="128" height="128" viewBox="0 0 140 140">
+            <defs>
+              <path id="curve-top" d="M 24,70 A 46,46 0 0,1 116,70" fill="none"/>
+              <path id="curve-bottom" d="M 116,70 A 46,46 0 0,1 24,70" fill="none"/>
+            </defs>
+            <!-- Concentric Stamp Rings in Royal Blue Ink -->
+            <circle cx="70" cy="70" r="66" fill="none" stroke="#1d4ed8" stroke-width="2.5" stroke-dasharray="6 3"/>
+            <circle cx="70" cy="70" r="61" fill="rgba(37, 99, 235, 0.05)" stroke="#1d4ed8" stroke-width="1.2"/>
+            <circle cx="70" cy="70" r="43" fill="none" stroke="#1d4ed8" stroke-width="1.2"/>
+
+            <!-- Circular Text: Upper -->
+            <text font-size="8" font-weight="900" fill="#1d4ed8" letter-spacing="1.2">
+              <textPath href="#curve-top" startOffset="50%" text-anchor="middle">
+                LEMBAGA PELABUHAN KEMAMAN
+              </textPath>
+            </text>
+
+            <!-- Circular Text: Lower -->
+            <text font-size="7.5" font-weight="800" fill="#1d4ed8" letter-spacing="1.5">
+              <textPath href="#curve-bottom" startOffset="50%" text-anchor="middle">
+                ★ KELULUSAN RASMI ★
+              </textPath>
+            </text>
+
+            <!-- Center Anchor Motif -->
+            <path d="M 70 47 L 70 75 M 63 54 L 77 54 M 56 65 C 56 77 84 77 84 65" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="70" cy="45" r="3" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+
+            <!-- Centered Date & Approval Text Box -->
+            <rect x="32" y="78" width="76" height="15" rx="3" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1"/>
+            <text x="70" y="89" font-size="7" font-family="'JetBrains Mono', monospace" font-weight="bold" fill="#1e40af" text-anchor="middle">${displayDate}</text>
+            <text x="70" y="99" font-size="6" font-weight="900" fill="#1d4ed8" letter-spacing="0.5" text-anchor="middle">DILULUSKAN</text>
+          </svg>
+          <span class="text-[9px] font-black text-blue-700 tracking-tighter uppercase mt-0.5">e-Cop Statutori LPKmn</span>
+        </div>
+      `;
+    }
+
+    function generateBlueESignatureSvg(name) {
+      return `
+        <div class="relative select-none h-14 flex items-center justify-center">
+          <svg width="180" height="54" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Cursive dynamic signature strokes in royal blue ink -->
+            <path d="M 16 40 Q 32 8 48 24 T 80 18 T 110 32 T 140 14 T 178 30" stroke="#1d4ed8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 38 26 Q 68 4 92 36 T 155 20" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M 22 45 C 65 50 125 45 182 34" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M 115 16 L 132 46" stroke="#1d4ed8" stroke-width="2.4" stroke-linecap="round"/>
+            <!-- Subtle ink dot -->
+            <circle cx="180" cy="30" r="1.5" fill="#1d4ed8"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    function handleApproveLicence(appId) {
+      const app = state.applications.find(a => a.id === appId);
+      if (!app) return;
+
+      const approverName = (state.user && state.user.name) ? state.user.name : 'En. Ahmad Zulkifli';
+      const approverRole = (state.user && state.user.role) ? state.user.role : 'Pegawai Penilai (M/T)';
+      const today = new Date().toLocaleDateString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+      const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      app.status = 'approved';
+      app.statusLabel = 'Diluluskan & Berkuat Kuasa';
+      app.approvedBy = approverName.toUpperCase();
+      app.approverRole = approverRole;
+      app.approvalDate = today;
+      app.validFrom = today;
+      app.validUntil = nextYear;
+      app.digitalSignatureId = `DS-LPK-${Math.floor(10000 + Math.random() * 90000)}-SEC`;
+
+      state.auditLogs.unshift({
+        id: String(Date.now()),
+        time: new Date().toLocaleTimeString('ms-MY'),
+        date: 'Hari ini',
+        action: 'PERMOHONAN_DILULUSKAN',
+        desc: `Permohonan ${app.referenceNo} (${app.company}) telah diluluskan dan dimeterai dengan e-Tandatangan serta e-Cop rasmi warna biru oleh ${approverName}.`,
+        ip: '10.24.18.9',
+        user: state.user.email
+      });
+
+      alert(`Permohonan ${app.referenceNo} BERJAYA DILULUSKAN!\n\ne-Tandatangan dan e-Cop rasmi berwarna biru telah dimeterai secara automatik pada Sijil Lesen.`);
+      setTab('certificate', { licenceId: app.id });
     }
 
     // Phase 2 Action Handlers
@@ -1253,14 +1358,17 @@
                         ${app.statusLabel}
                       </span>
                     </td>
-                    <td class="py-3 px-4 text-right">
+                    <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
                       ${app.status === 'approved' ? `
-                        <button onclick="setTab('certificate', { licenceId: '${app.id}' })" class="px-3 py-1 bg-blue-50 text-[#0b2545] hover:bg-blue-100 rounded-md font-bold text-[11px]">
-                          Cetak Sijil (QR)
+                        <button onclick="setTab('certificate', { licenceId: '${app.id}' })" class="px-3 py-1 bg-blue-50 text-[#0b2545] hover:bg-blue-100 rounded-md font-bold text-[11px] cursor-pointer">
+                          Sijil &amp; e-Cop (PDF/QR)
                         </button>
                       ` : `
-                        <button onclick="setTab('semak', { token: '${app.qrToken}' })" class="px-3 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-bold text-[11px]">
-                          Semak
+                        <button onclick="handleApproveLicence('${app.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-bold text-[11px] shadow-xs cursor-pointer">
+                          ✍️ Luluskan (Approve)
+                        </button>
+                        <button onclick="setTab('certificate', { licenceId: '${app.id}' })" class="px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-md font-semibold text-[11px] cursor-pointer">
+                          Lihat Draf
                         </button>
                       `}
                     </td>
@@ -1347,10 +1455,14 @@
         date: 'Hari ini',
         validFrom: '29 Ogos 2026',
         validUntil: '28 Ogos 2027',
+        approvedBy: (state.user && state.user.name) ? state.user.name.toUpperCase() : 'PEGAWAI PENILAI LPKMN',
+        approverRole: (state.user && state.user.role) ? state.user.role : 'Pegawai Penilai (M/T)',
+        approvalDate: '29 Ogos 2026',
+        digitalSignatureId: `DS-LPK-${Math.floor(10000 + Math.random() * 90000)}-SEC`,
         qrToken: 'tok_' + Math.random().toString(36).substring(2, 15)
       });
 
-      alert('Permohonan anda berjaya dihantar dan didaftarkan dengan No. Rujukan: ' + newRef);
+      alert('Permohonan anda berjaya dihantar dan dimeterai dengan No. Rujukan: ' + newRef);
       setTab('dashboard');
     }
 
@@ -1360,7 +1472,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h1 class="text-2xl font-bold text-[#0b2545]">Pelesenan &amp; Permit Maritim</h1>
-              <p class="text-xs text-slate-500">Pengeluaran Sijil Rasmi Berserta Kod QR 2D Matriks (GP-13)</p>
+              <p class="text-xs text-slate-500">Pengeluaran Sijil Rasmi Berserta Kod QR 2D Matriks &amp; e-Cop Biru (GP-13)</p>
             </div>
           </div>
 
@@ -1377,10 +1489,10 @@
                   <span class="text-slate-400 block">Tempoh: ${lic.validFrom} – ${lic.validUntil}</span>
                 </div>
                 <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <button onclick="setTab('certificate', { licenceId: '${lic.id}' })" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm">
-                    Buka Sijil Rasmi (PDF/QR) →
+                  <button onclick="setTab('certificate', { licenceId: '${lic.id}' })" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer">
+                    <span>Sijil &amp; e-Cop Rasmi (PDF) →</span>
                   </button>
-                  <button onclick="setTab('semak', { token: '${lic.qrToken}' })" class="text-xs font-semibold text-slate-600 hover:text-[#0b2545]">
+                  <button onclick="setTab('semak', { token: '${lic.qrToken}' })" class="text-xs font-semibold text-slate-600 hover:text-[#0b2545] cursor-pointer">
                     Uji Imbasan QR
                   </button>
                 </div>
@@ -1396,12 +1508,43 @@
       return `
         <div class="max-w-4xl mx-auto space-y-6">
           <div class="flex items-center justify-between no-print">
-            <button onclick="setTab('pelesenan')" class="text-xs font-bold text-slate-600 hover:text-slate-900">← Kembali ke Senarai</button>
-            <button onclick="window.print()" class="px-5 py-2.5 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-              <span>Cetak / Simpan PDF Rasmi</span>
-            </button>
+            <button onclick="setTab('pelesenan')" class="text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer">← Kembali ke Senarai</button>
+            <div class="flex items-center gap-2">
+              ${lic.status !== 'approved' ? `
+                <button onclick="handleApproveLicence('${lic.id}')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer">
+                  <span>✍️ Luluskan &amp; Meterai Sijil</span>
+                </button>
+              ` : ''}
+              <button onclick="window.print()" class="px-5 py-2.5 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Cetak / Simpan PDF Rasmi</span>
+              </button>
+            </div>
           </div>
+
+          <!-- APPROVAL NOTIFICATION BANNER (IF PENDING REVIEW) -->
+          ${lic.status !== 'approved' ? `
+            <div class="p-4 bg-amber-50 border-2 border-amber-300 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 no-print shadow-xs">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">⏳</span>
+                <div>
+                  <h4 class="font-bold text-amber-900 text-sm">Permohonan Ini Belum Diluluskan (${lic.statusLabel})</h4>
+                  <p class="text-xs text-amber-800">Pegawai Penilai / Pentadbir boleh menyemak dan meluluskan permohonan ini untuk menjana e-Tandatangan serta e-Cop rasmi secara automatik.</p>
+                </div>
+              </div>
+              <button onclick="handleApproveLicence('${lic.id}')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer whitespace-nowrap flex items-center gap-2 transition-all active:scale-95">
+                <span>✍️ Luluskan Permohonan Sekarang</span>
+              </button>
+            </div>
+          ` : `
+            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-950 no-print">
+              <div class="flex items-center gap-2">
+                <span class="text-blue-600 font-black">✓</span>
+                <span>Sijil Pelesenan ini telah diluluskan dan dimeterai secara elektronik dengan <strong>e-Cop Rasmi (Biru)</strong> &amp; <strong>e-Tandatangan Digital</strong> oleh <strong>${lic.approvedBy || 'Pegawai Pelesenan'}</strong>.</span>
+              </div>
+              <span class="font-mono font-bold text-blue-800 px-2 py-0.5 bg-blue-100 rounded text-[10px]">${lic.digitalSignatureId || 'DS-LPK-84920-SEC'}</span>
+            </div>
+          `}
 
           <!-- SIJIL PERAKUAN PELESENAN RASMI (STATUTORY MALAYSIAN GOVERNMENT CERTIFICATE) -->
           <div id="certificate-print-area" class="bg-white border border-slate-800 p-2 shadow-2xl">
@@ -1477,10 +1620,10 @@
                 </p>
               </div>
 
-              <!-- Balanced Government Footer: Digital QR, Mohor Seal & General Manager Signature -->
+              <!-- Balanced Government Footer: Digital QR, Blue Mohor e-Cop & Signatory Block -->
               <div class="pt-8 grid grid-cols-12 gap-4 items-end text-xs relative z-10">
                 <!-- Left: Standard ISO/IEC 18004 QR Matrix -->
-                <div class="col-span-5 flex items-center gap-3">
+                <div class="col-span-4 flex items-center gap-3">
                   <div class="shrink-0 border border-slate-400 p-1 bg-white">
                     ${generateQrSvg('https://ekawalselia.web.app/semak/' + lic.qrToken, 96)}
                   </div>
@@ -1491,20 +1634,39 @@
                   </div>
                 </div>
 
-                <!-- Middle: Official Mohor Stamp -->
-                <div class="col-span-3 flex flex-col items-center justify-center text-center">
-                  <div class="w-18 h-18 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center p-1 text-center text-[8px] font-bold text-slate-600 uppercase tracking-tighter leading-tight">
-                    MOHOR RASMI<br>LEMBAGA PELABUHAN<br>KEMAMAN
-                  </div>
+                <!-- Middle: Official Blue Electronic Cop (e-Cop LPKmn) -->
+                <div class="col-span-4 flex flex-col items-center justify-center text-center">
+                  ${lic.status === 'approved' ? `
+                    ${generateBlueECopSvg(lic.approvedBy, lic.approvalDate || lic.validFrom, lic.referenceNo)}
+                  ` : `
+                    <div class="w-24 h-24 rounded-full border-2 border-dashed border-amber-300 bg-amber-50/50 flex flex-col items-center justify-center p-2 text-center text-[8px] font-bold text-amber-700 uppercase tracking-tighter">
+                      <span>BELUM DIMETERAI</span>
+                      <span class="text-[7px] font-normal text-amber-600 mt-1">Menunggu Kelulusan</span>
+                    </div>
+                  `}
                 </div>
 
-                <!-- Right: Official Signatory Block -->
+                <!-- Right: Official Blue e-Signature Block -->
                 <div class="col-span-4 text-right space-y-1">
                   <p class="text-[10px] text-slate-500 italic">Dikeluarkan di bawah meterai:</p>
-                  <div class="h-8"></div>
-                  <p class="font-bold text-slate-950 uppercase text-xs">PENGURUS BESAR</p>
-                  <p class="text-slate-700 text-[11px]">Lembaga Pelabuhan Kemaman</p>
-                  <p class="text-slate-500 text-[10px]">Tarikh Dikeluarkan: ${lic.validFrom}</p>
+                  
+                  ${lic.status === 'approved' ? `
+                    <!-- Blue e-Signature -->
+                    <div class="my-[-6px] flex justify-end">
+                      ${generateBlueESignatureSvg(lic.approvedBy)}
+                    </div>
+                    <p class="font-bold text-slate-950 uppercase text-xs tracking-tight">( ${lic.approvedBy || 'KAPT. WAN MOHD ZULKIFLI BIN WAN SALLEH'} )</p>
+                    <p class="text-slate-700 text-[10px] font-medium leading-tight">${lic.approverRole || 'Pengurus Besar / Pegawai Pelesenan Maritim'}</p>
+                    <p class="text-slate-500 text-[10px]">Lembaga Pelabuhan Kemaman</p>
+                    <p class="text-blue-900 font-mono text-[9px] font-bold">Meterai Digital: ${lic.digitalSignatureId || 'DS-LPK-84920-SEC'}</p>
+                    <p class="text-slate-500 text-[9px]">Tarikh: ${lic.approvalDate || lic.validFrom}</p>
+                  ` : `
+                    <div class="h-14 flex items-center justify-end">
+                      <span class="text-[11px] text-amber-600 italic font-mono border-b border-dashed border-amber-400 pb-1">[ MENUNGGU TANDATANGAN ]</span>
+                    </div>
+                    <p class="font-bold text-slate-400 uppercase text-xs">PENGURUS BESAR</p>
+                    <p class="text-slate-400 text-[10px]">Lembaga Pelabuhan Kemaman</p>
+                  `}
                 </div>
               </div>
 
