@@ -142,15 +142,31 @@
         { name: 'Zon Dermaga Barat (West Wharf)', area: '45.2 Hektar', coords: "04° 14.8' N, 103° 27.5' E", isps: 'Level 1 (Zon Bebas Cukai)', authority: 'Konsortium Pelabuhan Kemaman' },
         { name: 'Zon Dermaga Timur (East Wharf)', area: '38.0 Hektar', coords: "04° 14.5' N, 103° 28.2' E", isps: 'Level 1', authority: 'Konsortium Pelabuhan Kemaman' },
         { name: 'Kawasan Sauh Kapal (Anchorage Area MRA)', area: '85.0 km²', coords: "04° 16.0' N, 103° 32.0' E", isps: 'Level 1', authority: 'Unit Marin & Trafik LPKmn' }
-      ]
+      ],
+      activeModal: null, // null | 'pilot-new' | 'pilot-card' | 'pilot-committee' | 'inspection-new' | 'inspection-checklist' | 'asset-loan' | 'fpx-pay' | 'fpx-receipt'
+      modalData: {},
+      gisQuery: { lat: '4.2500', lng: '103.5000', result: null }
     };
 
     function setTab(tab, extra) {
       state.currentTab = tab;
       if (extra && extra.licenceId) state.selectedLicenceId = extra.licenceId;
       if (extra && extra.token) state.semakToken = extra.token;
+      state.activeModal = null;
       renderApp();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openModal(modalName, data = {}) {
+      state.activeModal = modalName;
+      state.modalData = data;
+      renderApp();
+    }
+
+    function closeModal() {
+      state.activeModal = null;
+      state.modalData = {};
+      renderApp();
     }
 
     function fastLogin(roleKey) {
@@ -165,12 +181,14 @@
       }
       state.isLoggedIn = true;
       state.currentTab = 'dashboard';
+      state.activeModal = null;
       renderApp();
     }
 
     function logout() {
       state.isLoggedIn = false;
       state.currentTab = 'home';
+      state.activeModal = null;
       renderApp();
     }
 
@@ -201,15 +219,159 @@
       }
     }
 
+    // Phase 2 Action Handlers
+    function handleAddPilot(event) {
+      event.preventDefault();
+      const form = event.target;
+      const newPilot = {
+        id: String(Date.now()),
+        name: form.name.value,
+        licenceNo: `LPK/MALIM/2026/0${state.pilots.length + 10}`,
+        grade: form.grade.value,
+        status: 'Berkuat Kuasa',
+        vesselCount: '50 Pergerakan (Latihan)',
+        expiry: '31 Dis 2028',
+        certType: 'Lesen Malim Pelabuhan Kemaman'
+      };
+      state.pilots.unshift(newPilot);
+      state.auditLogs.unshift({
+        id: String(Date.now()),
+        time: new Date().toLocaleTimeString('ms-MY'),
+        date: 'Hari ini',
+        action: 'LESEN_MALIM_DILULUSKAN',
+        desc: `Permohonan Lesen Malim bagi ${newPilot.name} diluluskan oleh Jawatankuasa Pemaliman LPKmn.`,
+        ip: '10.24.18.9',
+        user: state.user.email
+      });
+      alert(`Lesen Malim ${newPilot.licenceNo} berjaya dikeluarkan bagi ${newPilot.name}!`);
+      closeModal();
+    }
+
+    function handleScheduleInspection(event) {
+      event.preventDefault();
+      const form = event.target;
+      const newIns = {
+        id: String(Date.now()),
+        refNo: `INS/2026/0${state.inspections.length + 90}`,
+        site: form.site.value,
+        officer: form.officer.value,
+        date: form.date.value,
+        type: form.type.value,
+        status: 'Dijadualkan',
+        carCount: 0
+      };
+      state.inspections.unshift(newIns);
+      state.auditLogs.unshift({
+        id: String(Date.now()),
+        time: new Date().toLocaleTimeString('ms-MY'),
+        date: 'Hari ini',
+        action: 'PEMERIKSAAN_DIJADUALKAN',
+        desc: `Lawatan tapak ${newIns.refNo} dijadualkan di ${newIns.site} oleh ${newIns.officer}.`,
+        ip: '10.24.18.9',
+        user: state.user.email
+      });
+      alert(`Pemeriksaan ${newIns.refNo} berjaya dijadualkan.`);
+      closeModal();
+    }
+
+    function handleCompleteInspection(insId, outcome) {
+      const ins = state.inspections.find(i => i.id === insId);
+      if (ins) {
+        ins.status = outcome === 'pass' ? 'Selesai & Patuh' : 'CAR Dikeluarkan';
+        ins.carCount = outcome === 'pass' ? 0 : 1;
+        state.auditLogs.unshift({
+          id: String(Date.now()),
+          time: new Date().toLocaleTimeString('ms-MY'),
+          date: 'Hari ini',
+          action: 'AUDIT_ISPS_DISELESAIKAN',
+          desc: `Audit pemeriksaan ${ins.refNo} disahkan dengan keputusan: ${ins.status}.`,
+          ip: '10.24.18.9',
+          user: state.user.email
+        });
+        alert(`Audit pemeriksaan ${ins.refNo} telah dikemaskini kepada: ${ins.status}`);
+        closeModal();
+      }
+    }
+
+    function handleAssetLoan(event) {
+      event.preventDefault();
+      const form = event.target;
+      const comp = form.company.value;
+      const item = form.equipment.value;
+      const qty = form.quantity.value;
+      const days = form.duration.value;
+
+      state.auditLogs.unshift({
+        id: String(Date.now()),
+        time: new Date().toLocaleTimeString('ms-MY'),
+        date: 'Hari ini',
+        action: 'PINJAMAN_ASET_DILULUSKAN',
+        desc: `Permohonan pinjaman ${qty} unit ${item} selama ${days} hari oleh ${comp} diluluskan.`,
+        ip: '10.24.18.9',
+        user: state.user.email
+      });
+      alert(`Permohonan pinjaman peralatan ${item} bagi syarikat ${comp} telah diluluskan.`);
+      closeModal();
+    }
+
+    function handleFpxCheckout(event) {
+      event.preventDefault();
+      const form = event.target;
+      const bank = form.bank.value;
+      const appRef = state.modalData.appRef || 'LPK/LPS/2026/00142';
+      const amount = state.modalData.amount || 'RM 2,500.00';
+      const payer = state.modalData.payer || state.user.name;
+
+      const newTx = {
+        ref: `FPX-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        appRef: appRef,
+        payer: payer,
+        bank: bank,
+        amount: amount,
+        status: 'Berjaya',
+        date: 'Hari ini',
+        receiptNo: `RESIT-LPK-2026-0${Math.floor(800 + Math.random() * 199)}`
+      };
+
+      state.fpxTransactions.unshift(newTx);
+      state.auditLogs.unshift({
+        id: String(Date.now()),
+        time: new Date().toLocaleTimeString('ms-MY'),
+        date: 'Hari ini',
+        action: 'BAYARAN_FPX_BERJAYA',
+        desc: `Kutipan fi ${amount} bagi ${appRef} berjaya disahkan melalui ${bank}. Resit: ${newTx.receiptNo}.`,
+        ip: '10.24.18.9',
+        user: state.user.email
+      });
+
+      openModal('fpx-receipt', newTx);
+    }
+
+    function handleCheckGis(event) {
+      event.preventDefault();
+      const lat = parseFloat(document.getElementById('gis-lat').value);
+      const lng = parseFloat(document.getElementById('gis-lng').value);
+
+      // Kemaman Port Limits statutory box: lat 4.21 to 4.28 N, lng 103.44 to 103.58 E
+      const isInside = lat >= 4.21 && lat <= 4.28 && lng >= 103.44 && lng <= 103.58;
+
+      state.gisQuery = {
+        lat: String(lat),
+        lng: String(lng),
+        result: isInside ? 'INSIDE' : 'OUTSIDE'
+      };
+      renderApp();
+    }
+
     // MAIN RENDERER
     function renderApp() {
       const root = document.getElementById('app-root');
       if (state.currentTab === 'semak' && !state.isLoggedIn) {
-        root.innerHTML = renderPublicSemakPage();
+        root.innerHTML = renderPublicSemakPage() + renderGlobalModals();
       } else if (state.isLoggedIn) {
-        root.innerHTML = renderAdminShell();
+        root.innerHTML = renderAdminShell() + renderGlobalModals();
       } else {
-        root.innerHTML = renderPublicPortal();
+        root.innerHTML = renderPublicPortal() + renderGlobalModals();
       }
     }
 
@@ -1514,7 +1676,7 @@
               <h1 class="text-2xl font-bold text-[#0b2545]">Pengurusan Pemaliman Pelabuhan (Pilotage)</h1>
               <p class="text-xs text-slate-500">Daftar Malim Berlesen, Sijil Pengecualian Malim (PEC) &amp; Jawatankuasa Pemaliman LPKmn</p>
             </div>
-            <button onclick="alert('Borang pendaftaran permohonan malim baru dibuka.')" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+            <button onclick="openModal('pilot-new')" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
               + Permohonan Lesen Malim Baru
             </button>
           </div>
@@ -1532,9 +1694,12 @@
                   <p><strong>Rekod Pergerakan:</strong> ${p.vesselCount}</p>
                   <p><strong>Sah Sehingga:</strong> ${p.expiry}</p>
                 </div>
-                <div class="pt-3 border-t flex justify-between items-center">
-                  <button onclick="alert('Memaparkan Kad Kuasa Malim Rasmi bagi ${p.name}')" class="text-xs font-bold text-purple-700 hover:underline cursor-pointer">
-                    Lihat Kad Kuasa Malim →
+                <div class="pt-3 border-t flex items-center justify-between gap-2">
+                  <button onclick="openModal('pilot-card', { name: '${p.name}', licenceNo: '${p.licenceNo}', grade: '${p.grade}', expiry: '${p.expiry}' })" class="text-xs font-bold text-purple-700 hover:underline cursor-pointer">
+                    Kad Kuasa Malim →
+                  </button>
+                  <button onclick="openModal('pilot-committee', { name: '${p.name}', licenceNo: '${p.licenceNo}' })" class="text-[11px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded cursor-pointer">
+                    Ulasan J/Kuasa
                   </button>
                 </div>
               </div>
@@ -1559,7 +1724,7 @@
               <h1 class="text-2xl font-bold text-[#0b2545]">Kawal Selia &amp; Pemeriksaan Operasi (M2)</h1>
               <p class="text-xs text-slate-500">Penjadualan lawatan tapak pegawai, senarai semak keselamatan ISPS &amp; Corrective Action Report (CAR)</p>
             </div>
-            <button onclick="alert('Penjadualan pemeriksaan tapak baru dibuka.')" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+            <button onclick="openModal('inspection-new')" class="px-4 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
               + Jadualkan Lawatan Tapak
             </button>
           </div>
@@ -1575,6 +1740,7 @@
                     <th class="py-3 px-4 font-bold">Tarikh Lawatan</th>
                     <th class="py-3 px-4 font-bold">Jenis Audit</th>
                     <th class="py-3 px-4 font-bold">Status</th>
+                    <th class="py-3 px-4 font-bold">Tindakan</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -1589,6 +1755,11 @@
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${ins.status.includes('Selesai') ? 'bg-emerald-100 text-emerald-800' : ins.status.includes('CAR') ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800'}">
                           ${ins.status}
                         </span>
+                      </td>
+                      <td class="py-3 px-4">
+                        <button onclick="openModal('inspection-checklist', { id: '${ins.id}', refNo: '${ins.refNo}', site: '${ins.site}' })" class="px-2.5 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 font-bold rounded border border-purple-200 cursor-pointer">
+                          Jalankan Audit Semak
+                        </button>
                       </td>
                     </tr>
                   `).join('')}
@@ -1615,7 +1786,7 @@
               <h1 class="text-2xl font-bold text-[#0b2545]">Pengurusan Aset &amp; Peralatan Keselamatan (M6)</h1>
               <p class="text-xs text-slate-500">Daftar aset konsesi pelabuhan, pinjaman peralatan maritim &amp; rekod penyelenggaraan berkala</p>
             </div>
-            <button onclick="alert('Borang pinjaman peralatan keselamatan dibuka.')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+            <button onclick="openModal('asset-loan')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
               + Permohonan Pinjaman Peralatan
             </button>
           </div>
@@ -1632,6 +1803,11 @@
                   <p><strong>Kategori:</strong> ${ast.category}</p>
                   <p><strong>Lokasi:</strong> ${ast.location}</p>
                   <p><strong>Keadaan:</strong> ${ast.condition}</p>
+                </div>
+                <div class="pt-3 border-t flex justify-between items-center">
+                  <button onclick="alert('Rekod log penyelenggaraan bagi aset ${ast.code} disahkan teratur.')" class="text-xs font-bold text-emerald-700 hover:underline cursor-pointer">
+                    Log Penyelenggaraan →
+                  </button>
                 </div>
               </div>
             `).join('')}
@@ -1655,6 +1831,9 @@
               <h1 class="text-2xl font-bold text-[#0b2545]">Gerbang Pembayaran Maritim (FPX Gateway)</h1>
               <p class="text-xs text-slate-500">Kutipan fi lesen dalam talian secara automatik berserta pengeluaran resit rasmi elektronik LPKmn</p>
             </div>
+            <button onclick="openModal('fpx-pay', { appRef: 'LPK/LPS/2026/00142', amount: 'RM 2,500.00', payer: state.user.name })" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer">
+              + Simulasi Bayaran FPX
+            </button>
           </div>
 
           <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
@@ -1670,6 +1849,7 @@
                     <th class="py-3 px-4 font-bold">Jumlah (RM)</th>
                     <th class="py-3 px-4 font-bold">No. Resit</th>
                     <th class="py-3 px-4 font-bold">Status</th>
+                    <th class="py-3 px-4 font-bold">Resit</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -1685,6 +1865,11 @@
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                           ✓ ${tx.status}
                         </span>
+                      </td>
+                      <td class="py-3 px-4">
+                        <button onclick="openModal('fpx-receipt', { ref: '${tx.ref}', appRef: '${tx.appRef}', payer: '${tx.payer}', bank: '${tx.bank}', amount: '${tx.amount}', receiptNo: '${tx.receiptNo}', date: '${tx.date}' })" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded text-[11px] cursor-pointer">
+                          Lihat Resit
+                        </button>
                       </td>
                     </tr>
                   `).join('')}
@@ -1713,6 +1898,79 @@
             </div>
           </div>
 
+          <!-- Interactive Marine Map Display -->
+          <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-md text-white space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <span class="font-bold text-sm text-amber-400">Peta Vektor Sempadan Pelabuhan Kemaman (Port Limits Statutory Perimeter)</span>
+                <p class="text-[11px] text-slate-400">Peta geospatial masa-nyata berpandukan warta maritim LPKmn</p>
+              </div>
+              <span class="px-2.5 py-1 bg-blue-950 text-blue-300 border border-blue-800 rounded font-mono text-[11px]">
+                WGS 84 / UTM Zone 48N
+              </span>
+            </div>
+
+            <!-- SVG Visual Port Limits Map -->
+            <div class="relative w-full bg-[#07192f] rounded-xl border border-slate-800 p-4 flex items-center justify-center overflow-hidden">
+              <svg viewBox="0 0 800 360" class="w-full h-auto max-h-[360px] select-none">
+                <!-- Water Grid Background -->
+                <defs>
+                  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.7"/>
+                  </pattern>
+                </defs>
+                <rect width="800" height="360" fill="url(#grid)" />
+
+                <!-- Coastline (West Side) -->
+                <path d="M 0,0 L 160,0 Q 220,120 180,240 L 140,360 L 0,360 Z" fill="#0f172a" stroke="#334155" stroke-width="2" />
+                <text x="50" y="180" fill="#64748b" font-size="14" font-weight="bold" letter-spacing="2">DARATAN KEMAMAN</text>
+
+                <!-- Port Limits Outer Boundary (Dashed Golden Line) -->
+                <polygon points="180,40 760,40 760,320 160,320" fill="rgba(245, 158, 11, 0.05)" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="8 4" />
+                <text x="420" y="30" fill="#f59e0b" font-size="12" font-weight="bold">HAD PELABUHAN KEMAMAN (PORT LIMITS)</text>
+
+                <!-- Dermaga Barat (West Wharf) -->
+                <rect x="175" y="80" width="80" height="40" rx="4" fill="#3b82f6" fill-opacity="0.7" stroke="#60a5fa" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Zon Dermaga Barat (West Wharf) - Keluasan: 45.2 Hektar (Zon Bebas Cukai)')" />
+                <text x="182" y="105" fill="#ffffff" font-size="10" font-weight="bold">Dermaga Barat</text>
+
+                <!-- Dermaga Timur (East Wharf) -->
+                <rect x="220" y="160" width="80" height="40" rx="4" fill="#8b5cf6" fill-opacity="0.7" stroke="#a78bfa" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Zon Dermaga Timur (East Wharf) - Keluasan: 38.0 Hektar')" />
+                <text x="228" y="185" fill="#ffffff" font-size="10" font-weight="bold">Dermaga Timur</text>
+
+                <!-- Kemaman Supply Base (KSB Basin) -->
+                <polygon points="170,230 250,220 270,270 160,280" fill="#10b981" fill-opacity="0.7" stroke="#34d399" stroke-width="1.5" class="cursor-pointer hover:fill-opacity-100" onclick="alert('Pangkalan Bekalan Kemaman (KSB) - Terminal Logistik Minyak & Gas')" />
+                <text x="180" y="255" fill="#ffffff" font-size="10" font-weight="bold">KSB Wharf</text>
+
+                <!-- Anchorage Area (MRA) -->
+                <circle cx="560" cy="180" r="70" fill="rgba(59, 130, 246, 0.15)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4" class="cursor-pointer hover:fill-opacity-30" onclick="alert('Kawasan Sauh Kapal (Anchorage Area MRA) - Keluasan: 85.0 km²')" />
+                <text x="510" y="185" fill="#38bdf8" font-size="11" font-weight="bold">Kawasan Sauh (MRA)</text>
+              </svg>
+            </div>
+
+            <!-- Point-In-Polygon Real-Time Inspector -->
+            <div class="bg-[#0b192c] p-4 rounded-xl border border-slate-700">
+              <span class="font-bold text-xs text-white block mb-2">Semakan Koordinat Kedudukan Kapal (Point-in-Polygon Engine):</span>
+              <form onsubmit="handleCheckGis(event)" class="flex flex-wrap items-center gap-3 text-xs">
+                <div>
+                  <label class="text-slate-400 block text-[10px]">Latitud (° U):</label>
+                  <input type="text" id="gis-lat" value="${state.gisQuery.lat}" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded text-white font-mono w-28" />
+                </div>
+                <div>
+                  <label class="text-slate-400 block text-[10px]">Longitud (° T):</label>
+                  <input type="text" id="gis-lng" value="${state.gisQuery.lng}" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded text-white font-mono w-28" />
+                </div>
+                <button type="submit" class="mt-4 px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded cursor-pointer">
+                  Semak Koordinat
+                </button>
+                ${state.gisQuery.result ? `
+                  <div class="mt-4 px-3 py-1.5 rounded font-bold ${state.gisQuery.result === 'INSIDE' ? 'bg-emerald-900/80 text-emerald-300 border border-emerald-600' : 'bg-rose-900/80 text-rose-300 border border-rose-600'}">
+                    ${state.gisQuery.result === 'INSIDE' ? '✓ DALAM HAD PELABUHAN KEMAMAN' : '✗ DI LUAR HAD PELABUHAN KEMAMAN'}
+                  </div>
+                ` : ''}
+              </form>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             ${state.gisZones.map(z => `
               <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-3">
@@ -1730,6 +1988,335 @@
           </div>
         </div>
       `;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // GLOBAL INTERACTIVE MODALS FOR PHASE 2 SUITE
+    // ─────────────────────────────────────────────────────────────
+    function renderGlobalModals() {
+      if (!state.activeModal) return '';
+
+      switch (state.activeModal) {
+        case 'pilot-new':
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <h3 class="font-bold text-sm">Permohonan Lesen Malim Baru (M1-7)</h3>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <form onsubmit="handleAddPilot(event)" class="p-6 space-y-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Penuh Pemohon (Malim):</label>
+                    <input type="text" name="name" required placeholder="cth: Kapt. Wan Azmi Wan Ismail" class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Gred Lesen Dipohon:</label>
+                    <select name="grade" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                      <option value="Malim Kanan (Gred A - Tanpa Had Saiz)">Malim Kanan (Gred A - Tanpa Had Saiz)</option>
+                      <option value="Malim Kelas 1 (Kapal sehingga 50,000 DWT)">Malim Kelas 1 (Kapal sehingga 50,000 DWT)</option>
+                      <option value="Malim Kelas 2 (Kapal sehingga 20,000 DWT)">Malim Kelas 2 (Kapal sehingga 20,000 DWT)</option>
+                    </select>
+                  </div>
+                  <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
+                    <p class="font-bold">Syarat Kelayakan Diperakui (GP-06 &amp; M1-7):</p>
+                    <ul class="list-disc pl-4 mt-1 space-y-0.5">
+                      <li>Sijil Kelayakan CoC Master (Unlimited) sah.</li>
+                      <li>Pemeriksaan kesihatan pelaut (Marine Medical Fitness) sah.</li>
+                      <li>Minimum 50 log pergerakan kapal latihan di Pelabuhan Kemaman.</li>
+                    </ul>
+                  </div>
+                  <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-lg cursor-pointer">Hantar Permohonan &amp; Sahkan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+
+        case 'pilot-card':
+          const p = state.modalData;
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] p-4 text-white text-center border-b-2 border-amber-400">
+                  <span class="text-[10px] tracking-widest text-amber-400 font-bold uppercase block">LEMBAGA PELABUHAN KEMAMAN</span>
+                  <h3 class="font-extrabold text-sm uppercase mt-0.5">KAD KUASA MALIM PELABUHAN</h3>
+                  <span class="text-[9px] text-slate-300 block">Akta Lembaga-Lembaga Pelabuhan 1969</span>
+                </div>
+                <div class="p-6 space-y-4 text-center">
+                  <div class="h-20 w-20 rounded-full bg-slate-800 text-amber-400 mx-auto flex items-center justify-center text-3xl font-bold border-2 border-amber-400 shadow-sm">
+                    ⚓
+                  </div>
+                  <div>
+                    <h4 class="text-base font-extrabold text-slate-950">${p.name}</h4>
+                    <p class="font-mono font-bold text-purple-900 text-xs">${p.licenceNo}</p>
+                    <span class="inline-block mt-1 px-2.5 py-0.5 bg-purple-100 text-purple-900 font-bold rounded-full text-[10px]">${p.grade}</span>
+                  </div>
+                  <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-left">
+                    <div>
+                      <span class="text-[10px] text-slate-500 block">Sah Sehingga:</span>
+                      <span class="font-bold text-slate-900">${p.expiry}</span>
+                    </div>
+                    <div>
+                      ${generateQrSvg(`LPKMN:MALIM:${p.licenceNo}`, 50)}
+                    </div>
+                  </div>
+                  <button onclick="closeModal()" class="w-full py-2 bg-[#0b2545] text-white font-bold rounded-lg cursor-pointer">Tutup Kad Kuasa</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+        case 'pilot-committee':
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <h3 class="font-bold text-sm">Ulasan Jawatankuasa Pemaliman (3 Ahli)</h3>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <div class="p-6 space-y-4">
+                  <div class="space-y-2">
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <span class="font-bold text-emerald-950 block">1. Kapt. Roslan (Ketua Penilai LPKmn):</span>
+                      <span class="text-emerald-800">✓ Lulus Ujian Lisan &amp; Simulator (Markah 92%). Disyorkan.</span>
+                    </div>
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <span class="font-bold text-emerald-950 block">2. Kapt. Harun (Wakil Malim Kanan KPK):</span>
+                      <span class="text-emerald-800">✓ Pemanduan kapal di Teluk Kalong kemas &amp; mematuhi undang-undang kecil.</span>
+                    </div>
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <span class="font-bold text-emerald-950 block">3. Pengurus Marin LPKmn:</span>
+                      <span class="text-emerald-800">✓ Sijil kesihatan disahkan. Tiada rekod insiden.</span>
+                    </div>
+                  </div>
+                  <button onclick="closeModal()" class="w-full py-2 bg-[#0b2545] text-white font-bold rounded-lg cursor-pointer">Tutup</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+        case 'inspection-new':
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <h3 class="font-bold text-sm">Jadualkan Lawatan Tapak Pemeriksaan (M2-1)</h3>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <form onsubmit="handleScheduleInspection(event)" class="p-6 space-y-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Lokasi / Fasiliti Pelabuhan:</label>
+                    <select name="site" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                      <option value="Dermaga Barat (Zon Bebas Pelabuhan Kemaman)">Dermaga Barat (Zon Bebas Pelabuhan Kemaman)</option>
+                      <option value="Dermaga Timur (East Wharf Bulk Jetty)">Dermaga Timur (East Wharf Bulk Jetty)</option>
+                      <option value="Kemaman Supply Base (Kemudahan Bunkering)">Kemaman Supply Base (Kemudahan Bunkering)</option>
+                      <option value="Jeti Tangki Minyak Teluk Kalong">Jeti Tangki Minyak Teluk Kalong</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Pegawai Pemeriksa Bertugas:</label>
+                    <input type="text" name="officer" value="${state.user.name}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Tarikh Lawatan:</label>
+                      <input type="date" name="date" value="2026-09-05" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                    </div>
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Jenis Audit:</label>
+                      <select name="type" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                        <option value="Pemeriksaan Keselamatan Kod ISPS">Pemeriksaan Keselamatan Kod ISPS</option>
+                        <option value="Audit Pematuhan Pencemaran Minyak">Audit Pematuhan Pencemaran Minyak</option>
+                        <option value="Pemeriksaan Bomba &amp; Bahaya">Pemeriksaan Bomba &amp; Bahaya</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-[#0b2545] hover:bg-[#133e87] text-white font-bold rounded-lg cursor-pointer">Jadualkan Lawatan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+
+        case 'inspection-checklist':
+          const insData = state.modalData;
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <div>
+                    <h3 class="font-bold text-sm">Senarai Semak Keselamatan ISPS &amp; Pelabuhan (M2-2)</h3>
+                    <p class="text-[11px] text-slate-300">${insData.refNo} &bull; ${insData.site}</p>
+                  </div>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <div class="p-6 space-y-4">
+                  <div class="space-y-3">
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 h-4 w-4" />
+                      <div>
+                        <span class="font-bold text-slate-900 block">1. Kawalan Akses &amp; Pagar Perimeter ISPS</span>
+                        <span class="text-slate-500">Pemeriksaan pos kawalan, palang keselamatan dan kad kuasa pelabuhan.</span>
+                      </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 h-4 w-4" />
+                      <div>
+                        <span class="font-bold text-slate-900 block">2. Peralatan Kebakaran &amp; Pam Hidran Dermaga</span>
+                        <span class="text-slate-500">Tekanan air hidran mencukupi dan alat pemadam api telah diservis.</span>
+                      </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 bg-slate-50 border rounded-lg cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 h-4 w-4" />
+                      <div>
+                        <span class="font-bold text-slate-900 block">3. Pelan Tindak Balas Tumpahan Minyak (Tier 1)</span>
+                        <span class="text-slate-500">Ketersediaan Oil Boom dan dispersant kimia sedia guna.</span>
+                      </div>
+                    </label>
+                  </div>
+                  <div class="pt-3 border-t flex items-center justify-between gap-3">
+                    <button onclick="handleCompleteInspection('${insData.id}', 'car')" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg cursor-pointer">
+                      Keluarkan CAR (Ketidakpatuhan)
+                    </button>
+                    <button onclick="handleCompleteInspection('${insData.id}', 'pass')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer">
+                      ✓ Sahkan Selesai &amp; Patuh
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+        case 'asset-loan':
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <h3 class="font-bold text-sm">Permohonan Pinjaman Peralatan Keselamatan (M6-1)</h3>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <form onsubmit="handleAssetLoan(event)" class="p-6 space-y-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Syarikat Pemohon:</label>
+                    <input type="text" name="company" value="${state.user.roleKey === 'applicant' ? state.user.name : 'Kemaman Marine Services Sdn Bhd'}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Peralatan Maritim Dipohon:</label>
+                    <select name="equipment" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+                      <option value="Oil Boom Maritim (500 Meter)">Oil Boom Maritim (500 Meter) - Baki Stok: 4 Unit</option>
+                      <option value="Marine Skimmer Oil Recovery">Marine Skimmer Oil Recovery - Baki Stok: 2 Unit</option>
+                      <option value="Multi-Gas Detector H2S">Multi-Gas Detector H2S - Baki Stok: 8 Unit</option>
+                    </select>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Kuantiti:</label>
+                      <input type="number" name="quantity" min="1" max="5" value="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                    </div>
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Tempoh Pinjaman (Hari):</label>
+                      <input type="number" name="duration" min="1" max="30" value="7" required class="w-full px-3 py-2 border border-slate-300 rounded-lg" />
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg cursor-pointer">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer">Hantar Permohonan Pinjaman</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+
+        case 'fpx-pay':
+          const fpxData = state.modalData;
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-[#0b2545] px-6 py-4 text-white flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-amber-400 text-slate-950 font-black rounded text-[10px]">FPX</span>
+                    <h3 class="font-bold text-sm">Gerbang Pembayaran Fi Lesen LPKmn (X-1)</h3>
+                  </div>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <form onsubmit="handleFpxCheckout(event)" class="p-6 space-y-4">
+                  <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">No. Permohonan:</span>
+                      <span class="font-mono font-bold text-slate-900">${fpxData.appRef || 'LPK/LPS/2026/00142'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-500">Jumlah Fi Pelesenan:</span>
+                      <span class="font-bold text-base text-[#0b2545]">${fpxData.amount || 'RM 2,500.00'}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Pilih Perbankan Internet (FPX):</label>
+                    <select name="bank" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-bold">
+                      <option value="Maybank2u">Maybank2u (Malayan Banking)</option>
+                      <option value="CIMB Clicks">CIMB Clicks</option>
+                      <option value="Bank Islam">Bank Islam Internet Banking</option>
+                      <option value="Public Bank">Public Bank Online</option>
+                      <option value="RHB Now">RHB Now</option>
+                    </select>
+                  </div>
+                  <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg cursor-pointer">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm cursor-pointer">
+                      Bayar Sekarang melalui FPX →
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+
+        case 'fpx-receipt':
+          const rc = state.modalData;
+          return `
+            <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+              <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden text-xs">
+                <div class="bg-emerald-800 px-6 py-4 text-white flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span>✓</span>
+                    <h3 class="font-bold text-sm">Resit Rasmi Pembayaran Berjaya (FPX)</h3>
+                  </div>
+                  <button onclick="closeModal()" class="text-slate-300 hover:text-white font-bold text-base cursor-pointer">&times;</button>
+                </div>
+                <div class="p-6 space-y-4" id="printable-receipt">
+                  <div class="text-center border-b pb-3 space-y-1">
+                    <span class="text-[10px] tracking-widest text-slate-500 font-bold uppercase block">LEMBAGA PELABUHAN KEMAMAN</span>
+                    <h4 class="font-extrabold text-base text-slate-900">RESIT RASMI ELEKTRONIK</h4>
+                    <p class="font-mono text-xs text-slate-600">${rc.receiptNo}</p>
+                  </div>
+                  <div class="space-y-2 text-xs">
+                    <div class="flex justify-between"><span class="text-slate-500">Tarikh:</span><span class="font-bold text-slate-900">${rc.date || 'Hari ini'}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Pembayar:</span><span class="font-bold text-slate-900">${rc.payer}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">No. Permohonan:</span><span class="font-mono font-bold text-slate-900">${rc.appRef}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Saluran Bayaran:</span><span class="font-bold text-slate-900">${rc.bank}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Rujukan FPX:</span><span class="font-mono font-bold text-slate-900">${rc.ref}</span></div>
+                    <div class="pt-2 border-t flex justify-between text-sm"><span class="font-bold text-slate-900">Jumlah Dibayar:</span><span class="font-black text-emerald-700">${rc.amount}</span></div>
+                  </div>
+                  <div class="p-3 bg-slate-50 rounded-lg border text-center text-[10px] text-slate-400 font-mono">
+                    Tandatangan Digital: LPK-SIG-${btoa(rc.receiptNo || 'REC').substring(0, 16)} (Akta Tandatangan Digital 1997)
+                  </div>
+                  <div class="pt-2 flex justify-between gap-3">
+                    <button onclick="window.print()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg cursor-pointer">🖨️ Cetak Resit</button>
+                    <button onclick="closeModal()" class="px-5 py-2 bg-[#0b2545] text-white font-bold rounded-lg cursor-pointer">Selesai</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+        default:
+          return '';
+      }
     }
 
     // Parse URL for QR Code scan redirections (/semak/:token or ?token=...)
@@ -1754,3 +2341,4 @@
   </script>
 </body>
 </html>
+
