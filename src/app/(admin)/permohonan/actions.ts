@@ -1,7 +1,7 @@
 'use server'
 
-import type { Prisma } from '@prisma/client'
 import { AUDIT_ACTIONS, renderAuditLabel } from '../../../lib/audit/actions'
+
 import { issueLicence } from '../../../lib/documents/issuance'
 import { withUser } from '../../../lib/db/scoped'
 import { licenceNoFor } from '../../../domain/application/reference-number'
