@@ -140,7 +140,7 @@ export function AdminSidebar({
         {/* Brand & Portal Header */}
         <div className="h-16 px-5 bg-[#0b2545] border-b border-slate-800 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-lg bg-white p-1 flex items-center justify-center shadow-xs border border-white/20">
+            <div className="h-11 w-11 flex items-center justify-center shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/logo-lpkmn.png"
@@ -148,6 +148,7 @@ export function AdminSidebar({
                 className="h-full w-full object-contain"
               />
             </div>
+
             <div>
               <span className="text-base font-extrabold text-white tracking-tight">
                 e-Kawalselia
